@@ -4,6 +4,7 @@ namespace Zstate\Crawler\Service;
 
 use GuzzleHttp\Psr7\UriNormalizer;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\UriInterface;
 
 class RequestFingerprint
 {
@@ -37,7 +38,8 @@ class RequestFingerprint
 
         hash_update($hashContext, $request->getMethod());
 
-        $uri = UriNormalizer::normalize($request->getUri(), UriNormalizer::PRESERVING_NORMALIZATIONS | UriNormalizer::SORT_QUERY_PARAMETERS);
+        $uri = self::normalizeUri($request->getUri());
+
         hash_update($hashContext, $uri);
 
         self::hashRequestBody($request, $hashContext);
@@ -89,5 +91,22 @@ class RequestFingerprint
                 hash_update($hashContext, $name . implode(", ", $values));
             }
         }
+    }
+
+    /**
+     * @param UriInterface $uri
+     * @return UriInterface
+     */
+    public static function normalizeUri(UriInterface $uri): UriInterface
+    {
+        $uri = UriNormalizer::normalize($uri,
+            UriNormalizer::DECODE_UNRESERVED_CHARACTERS
+            | UriNormalizer::CAPITALIZE_PERCENT_ENCODING
+            | UriNormalizer::CONVERT_EMPTY_PATH
+            | UriNormalizer::REMOVE_DOT_SEGMENTS
+            | UriNormalizer::SORT_QUERY_PARAMETERS
+        );
+
+        return $uri;
     }
 }

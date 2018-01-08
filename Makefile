@@ -25,4 +25,15 @@ test:
 	site1-local \
 	/application/bin/phpunit -c /application/phpunit.xml.dist $(PHPUNIT_FLAGS)
 
+run-script:
+	docker exec -it \
+	site1-local \
+	php /application/$(script)
+
+site1:
+	open -a "Firefox" http://localhost:8880/
+
+site2:
+	open -a "Firefox" http://localhost:8881/
+
 

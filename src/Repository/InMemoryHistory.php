@@ -24,4 +24,9 @@ class InMemoryHistory implements History
     {
         return in_array(RequestFingerprint::calculate($request), $this->history);
     }
+
+    public function count()
+    {
+        return count($this->history);
+    }
 }

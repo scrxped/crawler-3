@@ -2,7 +2,7 @@ version: '2'
 
 services:
   site1.local:
-    image: webdevops/php-apache-dev:5.6
+    image: webdevops/php-apache-dev:7.1
     container_name: site1-local
     ports:
       - "8880:80"
