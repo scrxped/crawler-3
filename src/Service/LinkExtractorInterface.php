@@ -7,7 +7,7 @@ interface LinkExtractorInterface
 {
     /**
      * @param ResponseInterface $response
-     * @return mixed
+     * @return array
      */
-    public function extract(ResponseInterface $response);
+    public function extract(ResponseInterface $response): array;
 }

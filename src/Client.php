@@ -16,6 +16,7 @@ use Zstate\Crawler\Repository\History;
 use Zstate\Crawler\Repository\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\LinkExtractorInterface;
+use Zstate\Crawler\UriIterator;
 
 class Client
 {
@@ -48,30 +49,52 @@ class Client
      * @var array
      */
     private $configuration;
+    /**
+     * @var Queue
+     */
+    private $queue;
 
 
-    public function __construct(Handler $handler, History $history, LinkExtractorInterface $linkExtractor, array $configuration)
+    public function __construct(
+        Handler $handler,
+        History $history,
+        Queue $queue,
+        LinkExtractorInterface $linkExtractor,
+        array $configuration
+    )
     {
         $this->stack = HandlerStack::create($handler);
         $this->handler = $handler;
         $this->history = $history;
         $this->configuration = $configuration;
+        $this->queue = $queue;
 
         $config = $this->configureDefaults($configuration);
+        $iterator = new UriIterator($queue,5);
 
         $this->httpClient = new GuzzleHttpClient($config);
-        $this->scheduler = new RequestScheduler($this->httpClient, $linkExtractor);
 
-        $this->addMiddleware(new DuplicateRequestFilter($history));
-        $this->addMiddleware($this->scheduler);
+        $this->scheduler = new Scheduler(
+            $this->httpClient,
+            $iterator,
+            $history,
+            $queue,
+            $linkExtractor,
+            $config['concurrency'] ?? 1
+        );
+//        $this->scheduler = new RequestScheduler($this->httpClient, $linkExtractor);
+
+//        $this->addMiddleware(new DuplicateRequestFilter($history));
+//        $this->addMiddleware($this->scheduler);
+
     }
 
-    public static function create(array $config)
+    public static function create(array $config): self
     {
         $handler = new CurlMultiHandler(new GuzzleCurlMultiHandler);
         $linkExtractor = LinkExtractor::fromConfig($config);
 
-        $crawler = new self($handler, new InMemoryHistory, $linkExtractor, $config);
+        $crawler = new self($handler, new InMemoryHistory, new InMemoryQueue, $linkExtractor, $config);
 
         return $crawler;
     }
@@ -81,7 +104,7 @@ class Client
      *
      * @param Middleware $middleware
      */
-    public function addMiddleware(Middleware $middleware)
+    public function addMiddleware(Middleware $middleware): void
     {
         $middlewareCallable = new MiddlewareWrapper($middleware);
 
@@ -96,7 +119,7 @@ class Client
      * ]
      * @return Client
      */
-    public function withAuth(array $authOptions)
+    public function withAuth(array $authOptions): self
     {
         // Override start url
         $this->configuration['start_url'] = $authOptions['loginUri'];
@@ -106,28 +129,27 @@ class Client
         return $this;
     }
 
-    public function withLog(Middleware $middleware)
+    public function withLog(Middleware $middleware): void
     {
         $this->stack->unshift(new MiddlewareWrapper($middleware), 'logger');
     }
 
-    public function run()
+    public function run(): void
     {
         if (! isset($this->configuration['start_url'])) {
             throw new \RuntimeException('Please specify the start URI.');
         }
 
-        $this->scheduler->schedule(new Uri($this->configuration['start_url']));
+        $this->queue->enqueue(new Uri($this->configuration['start_url']));
 
-        $this->handler->execute();
-//        echo $this->stack;
+        $this->scheduler->run();
     }
 
     /**
      * @param array $config
      * @return array
      */
-    private function configureDefaults(array $config)
+    private function configureDefaults(array $config): array
     {
         $configuration = [
             'debug' => false,

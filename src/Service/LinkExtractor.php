@@ -22,7 +22,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param array $config
      * @return LinkExtractor
      */
-    public static function fromConfig(array $config)
+    public static function fromConfig(array $config): self
     {
         $extractor = new self;
 
@@ -41,7 +41,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param array $deniedUriPatterns links
      * @return LinkExtractor
      */
-    public function deny(array $deniedUriPatterns)
+    public function deny(array $deniedUriPatterns): self
     {
         $this->deniedUriPatterns = $deniedUriPatterns;
 
@@ -52,7 +52,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param array $allowedDomains
      * @return LinkExtractor
      */
-    public function allowDomains(array $allowedDomains)
+    public function allowDomains(array $allowedDomains): self
     {
         $this->allowedDomains = $allowedDomains;
 
@@ -63,7 +63,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param ResponseInterface $response
      * @return array
      */
-    public function extract(ResponseInterface $response)
+    public function extract(ResponseInterface $response): array
     {
         $stream = $response->getBody();
 
@@ -100,7 +100,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param UriInterface $uri
      * @return bool
      */
-    private function isDomainAllowed(UriInterface $uri)
+    private function isDomainAllowed(UriInterface $uri): bool
     {
         if (empty($this->allowedDomains)) {
             return true;
@@ -118,7 +118,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param UriInterface $uri
      * @return bool
      */
-    private function isUriAllowed(UriInterface $uri)
+    private function isUriAllowed(UriInterface $uri): bool
     {
         if (empty($this->deniedUriPatterns)) {
             return true;
@@ -142,7 +142,7 @@ class LinkExtractor implements LinkExtractorInterface
      * @param UriInterface $uri
      * @return bool
      */
-    private function isAnchor(UriInterface $uri)
+    private function isAnchor(UriInterface $uri): bool
     {
         $link = $uri->__toString();
         if (isset($link[0]) && $link[0] === '#') {

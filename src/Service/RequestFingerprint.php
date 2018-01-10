@@ -32,7 +32,7 @@ class RequestFingerprint
      * @param array $includeHeaders
      * @return string
      */
-    public static function calculate(RequestInterface $request, array $includeHeaders = [])
+    public static function calculate(RequestInterface $request, array $includeHeaders = []): string
     {
         $hashContext = hash_init('sha256');
 
@@ -57,7 +57,7 @@ class RequestFingerprint
      * @param RequestInterface $request
      * @param $hashContext
      */
-    private static function hashRequestBody(RequestInterface $request, $hashContext)
+    private static function hashRequestBody(RequestInterface $request, $hashContext): void
     {
         $stream = $request->getBody();
 
@@ -80,7 +80,7 @@ class RequestFingerprint
      * @param $hashContext
      * @param array $includeHeaders
      */
-    private static function hashRequestHeaders(RequestInterface $request, $hashContext, array $includeHeaders)
+    private static function hashRequestHeaders(RequestInterface $request, $hashContext, array $includeHeaders): void
     {
         $headers = $request->getHeaders();
         ksort($headers);

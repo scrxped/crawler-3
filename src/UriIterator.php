@@ -4,12 +4,11 @@ namespace Zstate\Crawler;
 
 
 use BadMethodCallException;
-use GuzzleHttp\Psr7\Request;
 use Iterator;
 use Psr\Http\Message\RequestInterface;
-use Zstate\Crawler\Repository\History;
+use Psr\Http\Message\UriInterface;
 
-class RequestGenerator implements Iterator
+class UriIterator implements Iterator
 {
     /**
      * @var Queue
@@ -54,8 +53,12 @@ class RequestGenerator implements Iterator
      * @return mixed Can return any type.
      * @since 5.0.0
      */
-    public function current(): ? RequestInterface
+    public function current(): ? UriInterface
     {
+        if(0 === $this->key && ! $this->queue->isEmpty()) {
+            $this->current = $this->queue->dequeue();
+        }
+
         return $this->current;
     }
 
@@ -72,11 +75,10 @@ class RequestGenerator implements Iterator
         if(! $this->queue->isEmpty()) {
             $this->lastSuccessfulIterationTime = microtime(true);
 
-            $uri = $this->queue->dequeue();
-
-            $this->current = new Request('GET' , $uri);
+            $this->current = $this->queue->dequeue();
 
         } else {
+
             $this->lastFailedIterationTime = microtime(true);
 
             $this->current = null;
@@ -118,7 +120,7 @@ class RequestGenerator implements Iterator
      */
     public function rewind(): void
     {
-        throw new BadMethodCallException("RequestGenerator is forward-only iterator, and cannot be rewound once iteration has started.");
+        throw new BadMethodCallException("UriIterator is forward-only iterator, and cannot be rewound once iteration has started.");
     }
 
     /**

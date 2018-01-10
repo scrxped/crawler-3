@@ -21,9 +21,9 @@ ssh:
 	docker exec -it site1-local bash
 
 test:
-	docker exec -it \
-	site1-local \
-	/application/bin/phpunit -c /application/phpunit.xml.dist $(PHPUNIT_FLAGS)
+	docker-compose exec \
+	site1.local \
+	/application/bin/phpunit -c /application/phpunit.xml.dist --stop-on-failure $(PHPUNIT_FLAGS)
 
 run-script:
 	docker exec -it \

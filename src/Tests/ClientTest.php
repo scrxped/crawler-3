@@ -34,7 +34,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $expected = [
             'GET http://site1.local/',
             'GET http://site1.local/customers.html',
-            'GET http://site2.local',
+            'GET http://site2.local/',
             'GET http://site2.local/service.html',
             'GET http://site2.local/contacts.html',
         ];
@@ -47,6 +47,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => 'http://site1.local/about/',
             'debug' => $this->debug,
+            'concurrency' => 1
         ];
         $client = Client::create($config);
 
@@ -67,7 +68,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => 'http://site1.local/',
             'debug' => $this->debug,
-            'allow_domains' => ['site1.local']
+            'allow_domains' => ['site1.local'],
+            'concurrency' => 7
         ];
         $client = Client::create($config);
 
@@ -258,6 +260,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => $startUrl,
             'debug' => $this->debug,
+            'concurrency' => 7
         ];
         $client = Client::create($config);
 
