@@ -25,20 +25,21 @@ class Scheduler
     /** @var callable */
     private $onRejected;
 
-    /** @var bool */
-    private $mutex;
     /**
      * @var ClientInterface
      */
     private $client;
+
     /**
      * @var History
      */
     private $history;
+
     /**
      * @var Queue
      */
     private $queue;
+
     /**
      * @var LinkExtractorInterface
      */
@@ -166,7 +167,7 @@ class Scheduler
 
     private function isFinished()
     {
-        if (! $this->pending && ! $this->iterable->valid()) {
+        if (empty($this->pending) && ! $this->iterable->valid()) {
             return true;
         }
 

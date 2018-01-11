@@ -82,11 +82,6 @@ class Client
             $linkExtractor,
             $config['concurrency'] ?? 1
         );
-//        $this->scheduler = new RequestScheduler($this->httpClient, $linkExtractor);
-
-//        $this->addMiddleware(new DuplicateRequestFilter($history));
-//        $this->addMiddleware($this->scheduler);
-
     }
 
     public static function create(array $config): self
