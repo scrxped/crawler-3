@@ -3,7 +3,9 @@
 namespace Zstate\Crawler\Middleware;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
+use Zstate\Crawler\Queue;
 
 class AuthMiddleware extends BaseMiddleware
 {
@@ -12,18 +14,14 @@ class AuthMiddleware extends BaseMiddleware
      */
     private $authOptions;
     /**
-     * @var ClientInterface
+     * @var Queue
      */
-    private $client;
+    private $queue;
 
-    /**
-     * @param ClientInterface $client
-     * @param array $authOptions
-     */
-    public function __construct(ClientInterface $client, array $authOptions)
+    public function __construct(Queue $queue, array $authOptions)
     {
         $this->authOptions = $authOptions;
-        $this->client = $client;
+        $this->queue = $queue;
     }
 
     /**
@@ -32,16 +30,24 @@ class AuthMiddleware extends BaseMiddleware
     public function processRequest(RequestInterface $request, array $options)
     {
         $authOptions = $this->authOptions;
-        $currentUri = (string) $request->getUri();
 
-        if (strpos($currentUri, $authOptions['loginUri']) !== false && $request->getMethod() === 'GET') {
-            $this->client->request('POST', $authOptions['loginUri'], [
-                'form_params' => $authOptions['form_params']
-            ]);
+        if ($this->isLoginPage($request, $authOptions['loginUri'])) {
+            $request = new Request('POST', $authOptions['loginUri']);
+
+            $this->queue->enqueue($request);
         }
 
-
-
         return $request;
+    }
+
+    /**
+     * @param RequestInterface $request
+     * @param $loginUri
+     * @return bool
+     */
+    private function isLoginPage(RequestInterface $request, string $loginUri): bool
+    {
+        $currentUri = (string) $request->getUri();
+        return strpos($currentUri, $loginUri) !== false && $request->getMethod() === 'GET';
     }
 }

@@ -10,20 +10,15 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Repository\History;
 use Zstate\Crawler\Service\LinkExtractorInterface;
+use Zstate\Crawler\Service\RequestFingerprint;
 
 class Scheduler
 {
 
     private $pending = [];
 
-    /** @var \Iterator */
-    private $iterable;
-
     /** @var callable|int */
     private $concurrency;
-
-    /** @var callable */
-    private $onRejected;
 
     /**
      * @var ClientInterface
@@ -58,13 +53,11 @@ class Scheduler
      */
     public function __construct(
         ClientInterface $client,
-        UriIterator $iterable,
         History $history,
         Queue $queue,
         LinkExtractorInterface $linkExtractor,
         int $concurrency)
     {
-        $this->iterable = $iterable;
         $this->concurrency = $concurrency;
         $this->client = $client;
         $this->history = $history;
@@ -77,7 +70,7 @@ class Scheduler
         $this->refillPending();
 
         reset($this->pending);
-        if (empty($this->pending) && !$this->iterable->valid()) {
+        if (empty($this->pending)) {
             return;
         }
 
@@ -120,26 +113,26 @@ class Scheduler
 
     private function addPending()
     {
-        if (! $this->iterable->valid()) {
-            return false;
-        }
-
-        $this->advanceIterator();
-
-        $uri = $this->iterable->current();
-        $idx = $this->iterable->key();
-
-        // Waiting on response
-        if($uri === null) {
+        // Waiting on response idling, will timeout automatically
+        if($this->queue->isEmpty()) {
             return true;
         }
 
-        $request = new Request("GET", $uri);
+        $request = $this->queue->dequeue();
+
+        $idx = RequestFingerprint::calculate($request);
         $promise = $this->client->sendAsync($request);
 
         $this->pending[$idx] = $promise->then(
             function (ResponseInterface $response) use ($request, $idx): void {
-                echo $request->getUri() . ": " . $response->getStatusCode() . "\n";
+                echo  $request->getMethod() . ": ". $request->getUri() . ": " . $response->getStatusCode() . "\n";
+
+                $stream = $response->getBody();
+
+                echo "\n\n\n" . $stream->__toString() . "\n\n\n";
+
+                $stream->rewind();
+
                 $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
             }
@@ -150,28 +143,11 @@ class Scheduler
         return true;
     }
 
-    private function advanceIterator()
-    {
-        $this->iterable->next();
-    }
-
     private function step($idx)
     {
         unset($this->pending[$idx]);
 
-        if (! $this->isFinished()) {
-
-            $this->refillPending();
-        }
-    }
-
-    private function isFinished()
-    {
-        if (empty($this->pending) && ! $this->iterable->valid()) {
-            return true;
-        }
-
-        return false;
+        $this->refillPending();
     }
 
     private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request)
@@ -184,7 +160,7 @@ class Scheduler
 
             $request = new Request('GET', $visitUri);
             if (! $this->history->contains($request)) {
-                $this->queue->enqueue($request->getUri());
+                $this->queue->enqueue($request);
             }
         }
     }

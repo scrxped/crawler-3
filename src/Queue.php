@@ -3,13 +3,13 @@
 namespace Zstate\Crawler;
 
 
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\RequestInterface;
 
 interface Queue
 {
-    public function enqueue(UriInterface $request): void;
+    public function enqueue(RequestInterface $request): void;
 
-    public function dequeue(): UriInterface;
+    public function dequeue(): RequestInterface;
 
     public function isEmpty(): bool;
 }

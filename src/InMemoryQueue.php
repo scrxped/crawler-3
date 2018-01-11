@@ -3,29 +3,28 @@
 namespace Zstate\Crawler;
 
 
-use GuzzleHttp\Psr7\Uri;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 
 class InMemoryQueue implements Queue
 {
     private $queue = [];
 
-    public function enqueue(UriInterface $uri): void
+    public function enqueue(RequestInterface $request): void
     {
-        $uri = (string) RequestFingerprint::normalizeUri($uri);
+        $fingerprint = RequestFingerprint::calculate($request);
 
-        if(! $this->isUriInQueue($uri)) {
-            $this->queue[] = $uri;
+        if(! $this->isRequestInQueue($fingerprint)) {
+            $this->queue[$fingerprint] = $request;
         }
 
     }
 
-    public function dequeue(): UriInterface
+    public function dequeue(): RequestInterface
     {
-        $uri =  array_shift($this->queue);
+        $request =  array_shift($this->queue);
 
-        return new Uri($uri);
+        return $request;
     }
 
     public function isEmpty(): bool
@@ -34,11 +33,11 @@ class InMemoryQueue implements Queue
     }
 
     /**
-     * @param string $uri
+     * @param string $fingerprint
      * @return bool
      */
-    private function isUriInQueue(string $uri): bool
+    private function isRequestInQueue(string $fingerprint): bool
     {
-        return in_array($uri, $this->queue);
+        return array_key_exists($fingerprint, $this->queue);
     }
 }

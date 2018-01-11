@@ -4,6 +4,7 @@ namespace Zstate\Crawler;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
@@ -41,7 +42,7 @@ class Client
     private $httpClient;
 
     /**
-     * @var RequestScheduler
+     * @var Scheduler
      */
     private $scheduler;
 
@@ -70,13 +71,11 @@ class Client
         $this->queue = $queue;
 
         $config = $this->configureDefaults($configuration);
-        $iterator = new UriIterator($queue,5);
 
         $this->httpClient = new GuzzleHttpClient($config);
 
         $this->scheduler = new Scheduler(
             $this->httpClient,
-            $iterator,
             $history,
             $queue,
             $linkExtractor,
@@ -119,7 +118,7 @@ class Client
         // Override start url
         $this->configuration['start_url'] = $authOptions['loginUri'];
 
-        $this->addMiddleware(new AuthMiddleware($this->httpClient, $authOptions));
+        $this->addMiddleware(new AuthMiddleware($this->queue, $authOptions));
 
         return $this;
     }
@@ -135,7 +134,7 @@ class Client
             throw new \RuntimeException('Please specify the start URI.');
         }
 
-        $this->queue->enqueue(new Uri($this->configuration['start_url']));
+        $this->queue->enqueue(new Request('GET', $this->configuration['start_url']));
 
         $this->scheduler->run();
     }
