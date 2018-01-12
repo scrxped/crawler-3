@@ -121,15 +121,12 @@ class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
      */
     private function getClient($handler)
     {
-        $linkExtractor = new LinkExtractor;
-
-        $crawler = new Client(
-            $handler,
-            new InMemoryHistory,
-            new InMemoryQueue,
-            $linkExtractor,
-            ['start_url' => 'http://site1.local/']
-        );
+        $config = [
+            'handler' => $handler,
+            'start_url' => 'http://site1.local/',
+            'concurrency' => 4
+        ];
+        $crawler = Client::create($config);
 
         return $crawler;
     }

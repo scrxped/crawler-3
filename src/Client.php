@@ -2,6 +2,7 @@
 namespace Zstate\Crawler;
 
 use GuzzleHttp\Client as GuzzleHttpClient;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
@@ -9,83 +10,94 @@ use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
-use Zstate\Crawler\History;
-use Zstate\Crawler\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
-use Zstate\Crawler\Service\LinkExtractorInterface;
 
 class Client
 {
-    /**
-     * @var CurlMultiHandler
-     */
-    private $handler;
-
     /**
      * @var HandlerStack
      */
     private $stack;
 
     /**
-     * @var History
-     */
-    private $history;
-
-    /**
-     * @var Client
-     */
-    private $httpClient;
-
-    /**
      * @var Scheduler
      */
     private $scheduler;
 
-    /**
-     * @var array
-     */
-    private $configuration;
-    /**
-     * @var Queue
-     */
-    private $queue;
-
-
-    public function __construct(
-        Handler $handler,
-        History $history,
-        Queue $queue,
-        LinkExtractorInterface $linkExtractor,
-        array $configuration
-    )
+    public function __construct(Scheduler $scheduler, HandlerStack $handlerStack)
     {
-        $this->stack = HandlerStack::create($handler);
-        $this->handler = $handler;
-        $this->history = $history;
-        $this->configuration = $configuration;
-        $this->queue = $queue;
+        $this->stack = $handlerStack;
+        $this->scheduler = $scheduler;
+    }
 
-        $config = $this->configureDefaults($configuration);
+    public static function create(array $config): self
+    {
+        $stack = self::createHandlerStack($config['handler'] ?? new CurlMultiHandler(new GuzzleCurlMultiHandler));
 
-        $this->httpClient = new GuzzleHttpClient($config);
+        $httpClient = self::createHttpClient($config, $stack);
 
-        $this->scheduler = new Scheduler(
-            $this->httpClient,
+        $scheduler = self::createScheduler($config, $httpClient);
+
+        $crawler = new self($scheduler, $stack);
+
+        return $crawler;
+    }
+
+    /**
+     * @param Handler $handler
+     * @return HandlerStack
+     */
+    private static function createHandlerStack(Handler $handler): HandlerStack
+    {
+        $stack = HandlerStack::create($handler);
+
+        return $stack;
+    }
+
+    /**
+     * @param array $config
+     * @param $stack
+     * @return ClientInterface
+     */
+    private static function createHttpClient(array $config, HandlerStack $stack): ClientInterface
+    {
+        $config['handler'] = $stack;
+
+        $config = self::configureDefaults($config);
+
+        $httpClient = new GuzzleHttpClient($config);
+
+        return $httpClient;
+    }
+
+    /**
+     * @param array $config
+     * @param $httpClient
+     * @return Scheduler
+     */
+    private static function createScheduler(array $config, $httpClient): Scheduler
+    {
+        $linkExtractor = LinkExtractor::fromConfig($config);
+
+        $history = $config['history'] ?? new InMemoryHistory;
+
+        $queue = $config['queue'] ?? new InMemoryQueue;
+
+        $scheduler = new Scheduler(
+            $httpClient,
             $history,
             $queue,
             $linkExtractor,
             $config['concurrency'] ?? 1
         );
-    }
 
-    public static function create(array $config): self
-    {
-        $handler = new CurlMultiHandler(new GuzzleCurlMultiHandler);
-        $linkExtractor = LinkExtractor::fromConfig($config);
+        if (! isset($config['start_url'])) {
+            throw new \RuntimeException('Please specify the start URI.');
+        }
 
-        $crawler = new self($handler, new InMemoryHistory, new InMemoryQueue, $linkExtractor, $config);
+        $scheduler->queue(new Request('GET', $config['start_url']));
 
-        return $crawler;
+        return $scheduler;
     }
 
     /**
@@ -110,9 +122,6 @@ class Client
      */
     public function withAuth(array $authOptions): self
     {
-        // Override start url
-        $this->configuration['start_url'] = $authOptions['loginUri'];
-
         $body = http_build_query($authOptions['form_params'], '', '&');
         $request = new Request(
             'POST',
@@ -121,7 +130,7 @@ class Client
             $body
         );
 
-        $this->queue->enqueue($request);
+        $this->scheduler->queue($request);
 
         return $this;
     }
@@ -133,12 +142,6 @@ class Client
 
     public function run(): void
     {
-        if (! isset($this->configuration['start_url'])) {
-            throw new \RuntimeException('Please specify the start URI.');
-        }
-
-        $this->queue->enqueue(new Request('GET', $this->configuration['start_url']));
-
         $this->scheduler->run();
     }
 
@@ -146,7 +149,7 @@ class Client
      * @param array $config
      * @return array
      */
-    private function configureDefaults(array $config): array
+    private static function configureDefaults(array $config): array
     {
         $configuration = [
             'debug' => false,
@@ -155,8 +158,6 @@ class Client
         ];
 
         $configuration = array_merge($configuration, $config);
-
-        $configuration['handler'] = $this->stack;
 
         return $configuration;
     }

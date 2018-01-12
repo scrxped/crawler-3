@@ -90,6 +90,11 @@ class Scheduler
         }
     }
 
+    public function queue(RequestInterface $request): void
+    {
+        $this->queue->enqueue($request);
+    }
+
     private function schedule()
     {
         if (! $this->concurrency) {

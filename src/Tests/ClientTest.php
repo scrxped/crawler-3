@@ -145,18 +145,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         // Getting more results due to redirects
         $expected = [
-            0 => 'POST http://site2.local/admin/login.php username=test&password=password',
-            1 => 'GET http://site2.local/admin/',
-            2 => 'GET http://site2.local/admin/login.php',
+            0 => 'GET http://site2.local/admin/',
+            1 => 'GET http://site2.local/admin/login.php',
+            2 => 'POST http://site2.local/admin/login.php username=test&password=password',
             3 => 'GET http://site2.local/admin/',
             4 => 'GET http://site2.local/admin/restricted.php',
             5 => 'GET http://site2.local/admin/logout.php',
             6 => 'GET http://site2.local/admin/',
             7 => 'GET http://site2.local/admin/login.php',
-            8 => 'GET http://site2.local/admin/',
-            9 => 'GET http://site2.local/admin/login.php',
         ];
-
 
         $this->assertEquals($expected, $history->getHistory());
     }
