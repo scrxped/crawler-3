@@ -17,11 +17,11 @@ class InMemoryQueue implements Queue
         if(! $this->isRequestInQueue($fingerprint)) {
             $this->queue[$fingerprint] = $request;
         }
-
     }
 
     public function dequeue(): RequestInterface
     {
+//        $fingerprint = key($this->queue);
         $request =  array_shift($this->queue);
 
         return $request;

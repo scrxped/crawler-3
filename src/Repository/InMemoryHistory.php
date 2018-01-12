@@ -11,21 +11,25 @@ class InMemoryHistory implements History
     /**
      * @param RequestInterface $request
      */
-    public function add(RequestInterface $request)
+    public function add(RequestInterface $request): void
     {
+        $body = $request->getBody();
+
         $this->history[] = RequestFingerprint::calculate($request);
+
+        $body->rewind();
     }
 
     /**
      * @param RequestInterface $request
      * @return bool
      */
-    public function contains(RequestInterface $request)
+    public function contains(RequestInterface $request): bool
     {
         return in_array(RequestFingerprint::calculate($request), $this->history);
     }
 
-    public function count()
+    public function count(): int
     {
         return count($this->history);
     }

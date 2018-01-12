@@ -10,11 +10,11 @@ interface History
      * @param RequestInterface $request
      * @return void
      */
-    public function add(RequestInterface $request);
+    public function add(RequestInterface $request): void;
 
     /**
      * @param RequestInterface $request
      * @return boolean
      */
-    public function contains(RequestInterface $request);
+    public function contains(RequestInterface $request): bool;
 }

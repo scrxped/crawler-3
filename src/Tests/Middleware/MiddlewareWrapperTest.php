@@ -9,6 +9,7 @@ use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zstate\Crawler\Client;
 use Zstate\Crawler\Handler\MockHandler;
+use Zstate\Crawler\InMemoryQueue;
 use Zstate\Crawler\Tests\Middleware\LogMiddleware;
 use Zstate\Crawler\Repository\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
@@ -125,6 +126,7 @@ class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
         $crawler = new Client(
             $handler,
             new InMemoryHistory,
+            new InMemoryQueue,
             $linkExtractor,
             ['start_url' => 'http://site1.local/']
         );

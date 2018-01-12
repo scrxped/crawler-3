@@ -3,6 +3,7 @@
 namespace Zstate\Crawler;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
@@ -67,7 +68,7 @@ class Scheduler
 
     public function run()
     {
-        $this->refillPending();
+        $this->schedule();
 
         reset($this->pending);
         if (empty($this->pending)) {
@@ -76,19 +77,24 @@ class Scheduler
 
         // Consume a potentially fluctuating list of promises while
         // ensuring that indexes are maintained (precluding array_shift).
+        /** @var PromiseInterface $promise */
         while ($promise = current($this->pending)) {
 
             next($this->pending);
 
-            $promise->wait();
+            try {
+                $promise->wait();
+            } catch (\Exception $e) {
+                $promise->reject($e);
+            }
         }
     }
 
-    private function refillPending()
+    private function schedule()
     {
         if (! $this->concurrency) {
             // Add all pending promises.
-            while ($this->addPending());
+            while ($this->nextRequest());
 
             return;
         }
@@ -103,41 +109,41 @@ class Scheduler
             return;
         }
         // Add the first pending promise.
-        $this->addPending();
+        $this->nextRequest();
         // Note this is special handling for concurrency=1 so that we do
         // not advance the iterator after adding the first promise. This
         // helps work around issues with generators that might not have the
         // next value to yield until promise callbacks are called.
-        while (--$concurrency && $this->addPending());
+        while (--$concurrency && $this->nextRequest());
     }
 
-    private function addPending()
+    private function nextRequest()
     {
-        // Waiting on response idling, will timeout automatically
+        // If queue is empty, then idling and waiting on response, will timeout automatically
         if($this->queue->isEmpty()) {
             return true;
         }
 
         $request = $this->queue->dequeue();
 
+        // If request is in the history, then idling
+        if($this->history->contains($request)) {
+            return true;
+        }
+
         $idx = RequestFingerprint::calculate($request);
         $promise = $this->client->sendAsync($request);
 
         $this->pending[$idx] = $promise->then(
             function (ResponseInterface $response) use ($request, $idx): void {
-                echo  $request->getMethod() . ": ". $request->getUri() . ": " . $response->getStatusCode() . "\n";
-
-                $stream = $response->getBody();
-
-                echo "\n\n\n" . $stream->__toString() . "\n\n\n";
-
-                $stream->rewind();
+                echo  $request->getMethod() . ": ". $request->getUri() . ": " . $response->getStatusCode() . " $idx \n";
 
                 $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
             }
         );
 
+        // Add request to the history
         $this->history->add($request);
 
         return true;
@@ -147,7 +153,7 @@ class Scheduler
     {
         unset($this->pending[$idx]);
 
-        $this->refillPending();
+        $this->schedule();
     }
 
     private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request)
@@ -159,7 +165,10 @@ class Scheduler
             $visitUri = UriResolver::resolve(new Uri($request->getUri()), new Uri($extractedLink));
 
             $request = new Request('GET', $visitUri);
-            if (! $this->history->contains($request)) {
+
+            // Don't queue it the request is in the history
+            // @todo: Investigate why it timeouts earlier when removing the condition
+            if(! $this->history->contains($request)) {
                 $this->queue->enqueue($request);
             }
         }

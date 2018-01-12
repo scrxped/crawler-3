@@ -5,19 +5,14 @@ use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Uri;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
-use Zstate\Crawler\Middleware\AuthMiddleware;
-use Zstate\Crawler\Middleware\DuplicateRequestFilter;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
-use Zstate\Crawler\Middleware\RequestScheduler;
 use Zstate\Crawler\Repository\History;
 use Zstate\Crawler\Repository\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\LinkExtractorInterface;
-use Zstate\Crawler\UriIterator;
 
 class Client
 {
@@ -118,7 +113,15 @@ class Client
         // Override start url
         $this->configuration['start_url'] = $authOptions['loginUri'];
 
-        $this->addMiddleware(new AuthMiddleware($this->queue, $authOptions));
+        $body = http_build_query($authOptions['form_params'], '', '&');
+        $request = new Request(
+            'POST',
+            $authOptions['loginUri'],
+            ['content-type' => 'application/x-www-form-urlencoded'],
+            $body
+        );
+
+        $this->queue->enqueue($request);
 
         return $this;
     }
