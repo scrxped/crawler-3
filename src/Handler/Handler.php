@@ -10,12 +10,12 @@ interface Handler
     /**
      * @return void
      */
-    public function execute();
+    public function execute(): void;
 
     /**
      * @param RequestInterface $request
      * @param array $options
      * @return PromiseInterface
      */
-    public function __invoke(RequestInterface $request, array $options);
+    public function __invoke(RequestInterface $request, array $options): PromiseInterface;
 }

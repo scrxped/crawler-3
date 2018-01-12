@@ -13,14 +13,14 @@ interface Middleware
      * @param array $options
      * @return RequestInterface
      */
-    public function processRequest(RequestInterface $request, array $options);
+    public function processRequest(RequestInterface $request, array $options): RequestInterface;
 
     /**
      * @param RequestInterface $request
      * @param ResponseInterface $response
      * @return ResponseInterface
      */
-    public function processResponse(RequestInterface $request, ResponseInterface $response);
+    public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface;
 
     /**
      * Just like try/catch, you can choose to propagate or not by returning $reason or throwing an Exception
@@ -28,5 +28,5 @@ interface Middleware
      * @param Exception $reason
      * @return Exception
      */
-    public function processFailure(RequestInterface $request, Exception $reason);
+    public function processFailure(RequestInterface $request, Exception $reason): Exception;
 }

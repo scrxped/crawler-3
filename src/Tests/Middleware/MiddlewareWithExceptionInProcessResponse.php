@@ -9,7 +9,7 @@ use Zstate\Crawler\Middleware\BaseMiddleware;
 
 class MiddlewareWithExceptionInProcessResponse extends BaseMiddleware
 {
-    public function processResponse(RequestInterface $request, ResponseInterface $response)
+    public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         throw new Exception('Exception in MiddlewareWithExceptionInProcessResponse::processResponse');
     }

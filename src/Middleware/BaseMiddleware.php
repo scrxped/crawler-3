@@ -11,7 +11,7 @@ abstract class BaseMiddleware implements Middleware
     /**
      * @inheritdoc
      */
-    public function processRequest(RequestInterface $request, array $options)
+    public function processRequest(RequestInterface $request, array $options): RequestInterface
     {
         return $request;
     }
@@ -19,7 +19,7 @@ abstract class BaseMiddleware implements Middleware
     /**
      * @inheritdoc
      */
-    public function processResponse(RequestInterface $request, ResponseInterface $response)
+    public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         return $response;
     }
@@ -27,7 +27,7 @@ abstract class BaseMiddleware implements Middleware
     /**
      * @inheritdoc
      */
-    public function processFailure(RequestInterface $request, Exception $reason)
+    public function processFailure(RequestInterface $request, Exception $reason): Exception
     {
         return $reason;
     }

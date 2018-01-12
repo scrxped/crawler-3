@@ -8,7 +8,7 @@ use Zstate\Crawler\Middleware\BaseMiddleware;
 
 class MiddlewareWithExceptionInProcessFailure extends BaseMiddleware
 {
-    public function processFailure(RequestInterface $request, Exception $reason)
+    public function processFailure(RequestInterface $request, Exception $reason): Exception
     {
         throw new Exception('Exception in MiddlewareWithExceptionInProcessFailure::processFailure');
     }

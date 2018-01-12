@@ -10,7 +10,7 @@ class HistoryMiddleware extends BaseMiddleware
 {
     private $history = [];
 
-    public function processRequest(RequestInterface $request, array $options)
+    public function processRequest(RequestInterface $request, array $options): RequestInterface
     {
         $stream = $request->getBody();
 
@@ -25,12 +25,12 @@ class HistoryMiddleware extends BaseMiddleware
         return parent::processRequest($request, $options);
     }
 
-    public function getHistory()
+    public function getHistory(): array
     {
         return $this->history;
     }
 
-    public function processFailure(RequestInterface $request, Exception $reason)
+    public function processFailure(RequestInterface $request, Exception $reason): Exception
     {
         $reasonMessage = $reason->getMessage();
 

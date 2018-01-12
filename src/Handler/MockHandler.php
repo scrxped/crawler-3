@@ -2,6 +2,7 @@
 
 namespace Zstate\Crawler\Handler;
 
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 use GuzzleHttp\Promise;
 
@@ -21,7 +22,7 @@ class MockHandler implements Handler
     /**
      * @inheritdoc
      */
-    public function execute()
+    public function execute(): void
     {
         Promise\queue()->run();
     }
@@ -29,7 +30,7 @@ class MockHandler implements Handler
     /**
      * @inheritdoc
      */
-    public function __invoke(RequestInterface $request, array $options)
+    public function __invoke(RequestInterface $request, array $options): PromiseInterface
     {
         return $this->handler->__invoke($request, $options);
     }

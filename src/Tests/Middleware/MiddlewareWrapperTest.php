@@ -11,7 +11,7 @@ use Zstate\Crawler\Client;
 use Zstate\Crawler\Handler\MockHandler;
 use Zstate\Crawler\InMemoryQueue;
 use Zstate\Crawler\Tests\Middleware\LogMiddleware;
-use Zstate\Crawler\Repository\InMemoryHistory;
+use Zstate\Crawler\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
 
 class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase

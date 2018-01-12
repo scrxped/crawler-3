@@ -9,7 +9,7 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zstate\Crawler\Repository\History;
+use Zstate\Crawler\History;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 
@@ -136,8 +136,6 @@ class Scheduler
 
         $this->pending[$idx] = $promise->then(
             function (ResponseInterface $response) use ($request, $idx): void {
-                echo  $request->getMethod() . ": ". $request->getUri() . ": " . $response->getStatusCode() . " $idx \n";
-
                 $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
             }
@@ -162,11 +160,15 @@ class Scheduler
 
         foreach ($links as $extractedLink) {
 
-            $visitUri = UriResolver::resolve(new Uri($request->getUri()), new Uri($extractedLink));
+            $currentUri = $request->getUri();
+            $visitUri = UriResolver::resolve($currentUri, new Uri($extractedLink));
 
             $request = new Request('GET', $visitUri);
 
-            // Don't queue it the request is in the history
+            // Adding referer header for logging purposes
+            $request = $request->withHeader('Referer', (string) $currentUri);
+
+            // Don't queue if the request is in the history
             // @todo: Investigate why it timeouts earlier when removing the condition
             if(! $this->history->contains($request)) {
                 $this->queue->enqueue($request);

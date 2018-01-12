@@ -1,5 +1,5 @@
 <?php
-namespace Zstate\Crawler\Repository;
+namespace Zstate\Crawler;
 
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;

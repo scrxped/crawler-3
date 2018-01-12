@@ -3,8 +3,8 @@
 namespace Zstate\Crawler\Handler;
 
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
-use GuzzleHttp\Promise;
 
 class CurlMultiHandler implements Handler
 {
@@ -25,7 +25,7 @@ class CurlMultiHandler implements Handler
     /**
      * @inheritdoc
      */
-    public function execute()
+    public function execute(): void
     {
         $this->handler->execute();
     }
@@ -33,7 +33,7 @@ class CurlMultiHandler implements Handler
     /**
      * @inheritdoc
      */
-    public function __invoke(RequestInterface $request, array $options)
+    public function __invoke(RequestInterface $request, array $options): PromiseInterface
     {
         return $this->handler->__invoke($request, $options);
     }

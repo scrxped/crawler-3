@@ -42,12 +42,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $history->getHistory());
     }
 
-    public function testHashLinks()
+    public function testAnchorsLinks()
     {
         $config = [
             'start_url' => 'http://site1.local/about/',
             'debug' => $this->debug,
-            'concurrency' => 1
+            'concurrency' => 4
         ];
         $client = Client::create($config);
 
@@ -69,7 +69,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             'start_url' => 'http://site1.local/',
             'debug' => $this->debug,
             'allow_domains' => ['site1.local'],
-            'concurrency' => 7
+            'concurrency' => 4
         ];
         $client = Client::create($config);
 
@@ -267,7 +267,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => $startUrl,
             'debug' => $this->debug,
-            'concurrency' => 7
+            'concurrency' => 4
         ];
         $client = Client::create($config);
 

@@ -9,8 +9,8 @@ use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
-use Zstate\Crawler\Repository\History;
-use Zstate\Crawler\Repository\InMemoryHistory;
+use Zstate\Crawler\History;
+use Zstate\Crawler\InMemoryHistory;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 
