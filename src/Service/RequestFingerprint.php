@@ -97,7 +97,7 @@ class RequestFingerprint
      * @param UriInterface $uri
      * @return UriInterface
      */
-    public static function normalizeUri(UriInterface $uri): UriInterface
+    private static function normalizeUri(UriInterface $uri): UriInterface
     {
         $uri = UriNormalizer::normalize($uri,
             UriNormalizer::DECODE_UNRESERVED_CHARACTERS

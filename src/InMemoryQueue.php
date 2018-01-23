@@ -3,6 +3,7 @@
 namespace Zstate\Crawler;
 
 
+use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 
@@ -21,7 +22,6 @@ class InMemoryQueue implements Queue
 
     public function dequeue(): RequestInterface
     {
-//        $fingerprint = key($this->queue);
         $request =  array_shift($this->queue);
 
         return $request;

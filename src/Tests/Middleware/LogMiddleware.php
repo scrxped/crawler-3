@@ -13,7 +13,17 @@ class LogMiddleware implements Middleware
 
     public function processRequest(RequestInterface $request, array $options): RequestInterface
     {
-        $this->log[] = "Process Request: {$request->getMethod()} " . (string)$request->getUri();
+        $stream = $request->getBody();
+
+        $requestBody = trim((string) $stream);
+
+        $stream->rewind();
+
+        if(! empty($requestBody)) {
+            $requestBody = " $requestBody";
+        }
+
+        $this->log[] = "Process Request: {$request->getMethod()} " . (string)$request->getUri() . $requestBody;
 
         return $request;
     }

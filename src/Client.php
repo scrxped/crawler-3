@@ -88,7 +88,7 @@ class Client
             $history,
             $queue,
             $linkExtractor,
-            $config['concurrency'] ?? 1
+            $config['concurrency'] ?? 10
         );
 
         if (! isset($config['start_url'])) {
@@ -137,7 +137,7 @@ class Client
 
     public function withLog(Middleware $middleware): void
     {
-        $this->stack->unshift(new MiddlewareWrapper($middleware), 'logger');
+        $this->stack->unshift(new MiddlewareWrapper($middleware), get_class($middleware));
     }
 
     public function run(): void

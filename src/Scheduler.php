@@ -66,26 +66,27 @@ class Scheduler
         $this->linkExtractor = $linkExtractor;
     }
 
-    public function run()
+    public function run(): void
     {
-        $this->schedule();
+        while(! $this->queue->isEmpty()) {
 
-        reset($this->pending);
-        if (empty($this->pending)) {
-            return;
-        }
+            $this->schedule();
 
-        // Consume a potentially fluctuating list of promises while
-        // ensuring that indexes are maintained (precluding array_shift).
-        /** @var PromiseInterface $promise */
-        while ($promise = current($this->pending)) {
+            reset($this->pending);
 
-            next($this->pending);
+            // Consume a potentially fluctuating list of promises while
+            // ensuring that indexes are maintained (precluding array_shift).
+            /** @var PromiseInterface $promise */
+            while ($promise = current($this->pending)) {
 
-            try {
-                $promise->wait();
-            } catch (\Exception $e) {
-                $promise->reject($e);
+                $idx = key($this->pending);
+                next($this->pending);
+
+                try {
+                    $promise->wait();
+                } catch (\Exception $e) {
+                    unset($this->pending[$idx]);
+                }
             }
         }
     }
@@ -95,19 +96,16 @@ class Scheduler
         $this->queue->enqueue($request);
     }
 
-    private function schedule()
+    private function schedule(): void
     {
         if (! $this->concurrency) {
-            // Add all pending promises.
             while ($this->nextRequest());
 
             return;
         }
 
         // Add only up to N pending promises.
-        $concurrency = is_callable($this->concurrency)
-            ? call_user_func($this->concurrency, count($this->pending))
-            : $this->concurrency;
+        $concurrency = $this->concurrency;
         $concurrency = max($concurrency - count($this->pending), 0);
         // Concurrency may be set to 0 to disallow new promises.
         if (!$concurrency) {
@@ -122,27 +120,29 @@ class Scheduler
         while (--$concurrency && $this->nextRequest());
     }
 
-    private function nextRequest()
+    private function nextRequest(): bool
     {
-        // If queue is empty, then idling and waiting on response, will timeout automatically
+        // If queue is empty, then idling and waiting
         if($this->queue->isEmpty()) {
-            return true;
+            return false;
         }
 
         $request = $this->queue->dequeue();
 
         // If request is in the history, then idling
         if($this->history->contains($request)) {
-            return true;
+            return false;
         }
 
         $idx = RequestFingerprint::calculate($request);
         $promise = $this->client->sendAsync($request);
 
         $this->pending[$idx] = $promise->then(
-            function (ResponseInterface $response) use ($request, $idx): void {
+            function (ResponseInterface $response) use ($request, $idx): ResponseInterface {
                 $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
+
+                return $response;
             }
         );
 
@@ -152,14 +152,14 @@ class Scheduler
         return true;
     }
 
-    private function step($idx)
+    private function step($idx): void
     {
         unset($this->pending[$idx]);
 
         $this->schedule();
     }
 
-    private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request)
+    private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request): void
     {
         $links = $this->linkExtractor->extract($response);
 
@@ -170,13 +170,12 @@ class Scheduler
 
             $request = new Request('GET', $visitUri);
 
-            // Adding referer header for logging purposes
+            // Add referer header for logging purposes
             $request = $request->withHeader('Referer', (string) $currentUri);
 
             // Don't queue if the request is in the history
-            // @todo: Investigate why it timeouts earlier when removing the condition
             if(! $this->history->contains($request)) {
-                $this->queue->enqueue($request);
+                $this->queue($request);
             }
         }
     }

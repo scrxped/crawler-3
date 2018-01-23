@@ -40,13 +40,13 @@ class MiddlewareWrapper
             }
 
             return $promise->then(
-                function ($response) use ($request): ResponseInterface {
+                function (ResponseInterface $response) use ($request): ResponseInterface {
 
                     $response = $this->middleware->processResponse($request, $response);
 
                     return $response;
                 },
-                function ($e) use ($request): PromiseInterface {
+                function (\Exception $e) use ($request): PromiseInterface {
                     //Just like try/catch, you can choose to propagate or not by returning an Exception or throwing an Exception.
                     $reason = $this->middleware->processFailure($request, $e);
 
