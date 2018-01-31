@@ -4,6 +4,7 @@ namespace Zstate\Crawler\Middleware;
 
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
+use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -33,7 +34,7 @@ class MiddlewareWrapper
             try {
                 $request = $this->middleware->processRequest($request, $options);
 
-                /** @var Promise $promise */
+                /** @var PromiseInterface $promise */
                 $promise = $delegate($request, $options);
             } catch (\Exception $e) {
                 return \GuzzleHttp\Promise\rejection_for($e);

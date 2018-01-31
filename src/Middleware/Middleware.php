@@ -9,6 +9,9 @@ use Psr\Http\Message\ResponseInterface;
 interface Middleware
 {
     /**
+     * Be careful when modifying the request in your middleware. If you change the request URI, then the URI resolution might
+     * not work properly for some pages.
+     *
      * @param RequestInterface $request
      * @param array $options
      * @return RequestInterface

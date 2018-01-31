@@ -2,16 +2,10 @@
 
 namespace Zstate\Crawler\Tests;
 
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\MessageFormatter;
-use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LogLevel;
-use Symfony\Component\Console\Logger\ConsoleLogger;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Tests\Middleware\LogMiddleware;
 use Zstate\Crawler\Tests\Middleware\HistoryMiddleware;
 use Zstate\Crawler\Tests\Middleware\MiddlewareWithExceptionInProcessFailure;
@@ -160,12 +154,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         // Getting more results due to redirects
         $expected = [
-            0 => 'Process Request: GET http://site2.local/admin/',
-            1 => 'Process Request: POST http://site2.local/admin/login.php username=test&password=password',
-            2 => 'Process Response: http://site2.local/admin/login.php status:200',
-            3 => 'Process Request: GET http://site2.local/admin/restricted.php',
-            4 => 'Process Request: GET http://site2.local/admin/logout.php',
-            5 => 'Process Response: http://site2.local/admin/ status:200',
+            0 => 'Process Request: POST http://site2.local/admin/login.php username=test&password=password',
+            1 => 'Process Response: http://site2.local/admin/login.php status:200',
+            2 => 'Process Request: GET http://site2.local/admin/',
+            3 => 'Process Response: http://site2.local/admin/ status:200',
+            4 => 'Process Request: GET http://site2.local/admin/restricted.php',
+            5 => 'Process Request: GET http://site2.local/admin/logout.php',
             6 => 'Process Response: http://site2.local/admin/restricted.php status:200',
             7 => 'Process Response: http://site2.local/admin/logout.php status:200',
         ];
@@ -299,6 +293,43 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $log->getLog());
     }
 
+    public function testReferer()
+    {
+        $log = new class implements Middleware {
+
+            private $count = 0;
+
+            public function processRequest(RequestInterface $request, array $options): RequestInterface
+            {
+                echo "Process Request: {$request->getMethod()} " . (string)$request->getUri() . PHP_EOL;
+
+                return $request;
+            }
+
+            public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+            {
+                $this->count++;
+                echo "{$this->count}. Process Response: " . (string)$request->getUri() . " status:" . $response->getStatusCode() . " <- Referer: " . $request->getHeaderLine('Referer') . PHP_EOL;
+
+                return $response;
+            }
+
+            public function processFailure(RequestInterface $request, \Exception $reason): \Exception
+            {
+                $reasonMessage = $reason->getMessage();
+
+                echo "Process Failure:" . (string)$request->getUri() . " message: " . $reasonMessage . "\n Referer: " . $request->getHeaderLine('Referer') . PHP_EOL;;
+
+                return $reason;
+            }
+        };
+
+        $client = $this->getClient('http://site1.local/');
+        $client->withLog($log);
+
+        $client->run();
+    }
+
 
 
     private function getClient($startUrl)
@@ -323,5 +354,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client = Client::create($config);
 
         $client->run();
+    }
+
+    public function testRedirectsAndUriResolver()
+    {
+        $client = $this->getClient('http://site1.local/redirect/');
+
+        $log = new LogMiddleware;
+
+        $client->withLog($log);
+
+        $client->run();
+
+        var_export($log->getLog());
+
+        $expected = [
+            0 => 'Process Request: GET http://site1.local/redirect/',
+            1 => 'Process Response: http://site1.local/redirect/ status:200',
+            2 => 'Process Request: GET http://site1.local/redirect/other.html?test=1',
+        ];
+        $this->assertEquals($expected, $log->getLog());
     }
 }

@@ -3,13 +3,16 @@
 namespace Zstate\Crawler;
 
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zstate\Crawler\History;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Zstate\Crawler\Event\ResponseReceived;
+use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 
@@ -42,6 +45,15 @@ class Scheduler
     private $linkExtractor;
 
     /**
+     * @var HandlerStack
+     */
+    private $handlerStack;
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
      * Configuration hash can include the following key value pairs:
      *
      * - concurrency: (integer) Pass this configuration option to limit the
@@ -49,11 +61,17 @@ class Scheduler
      *   creating a capped pool of promises. There is no limit by default.
      *
      * @param ClientInterface $client
-     * @param mixed $iterable Promises or values to iterate.
-     * @param array $config Configuration options
+     * @param HandlerStack $handlerStack
+     * @param EventDispatcherInterface $eventDispatcher
+     * @param History $history
+     * @param Queue $queue
+     * @param LinkExtractorInterface $linkExtractor
+     * @param int $concurrency
      */
     public function __construct(
         ClientInterface $client,
+        HandlerStack $handlerStack,
+        EventDispatcherInterface $eventDispatcher,
         History $history,
         Queue $queue,
         LinkExtractorInterface $linkExtractor,
@@ -64,6 +82,9 @@ class Scheduler
         $this->history = $history;
         $this->queue = $queue;
         $this->linkExtractor = $linkExtractor;
+        $this->handlerStack = $handlerStack;
+
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     public function run(): void
@@ -138,7 +159,9 @@ class Scheduler
         $promise = $this->client->sendAsync($request);
 
         $this->pending[$idx] = $promise->then(
-            function (ResponseInterface $response) use ($request, $idx): ResponseInterface {
+            function (ResponseInterface $response) use ($idx, $request): ResponseInterface {
+
+                $this->eventDispatcher->dispatch(ResponseReceived::class, new ResponseReceived($response, $request));
                 $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
 
@@ -162,10 +185,11 @@ class Scheduler
     private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request): void
     {
         $links = $this->linkExtractor->extract($response);
+        $currentUri = $request->getUri();
 
         foreach ($links as $extractedLink) {
 
-            $currentUri = $request->getUri();
+
             $visitUri = UriResolver::resolve($currentUri, new Uri($extractedLink));
 
             $request = new Request('GET', $visitUri);
