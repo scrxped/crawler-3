@@ -6,8 +6,14 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Zstate\Crawler\Event\BeforeEngineStarted;
+use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
+use Zstate\Crawler\Listener\Authenticator;
+use Zstate\Crawler\Listener\RedirectScheduler;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
 use Zstate\Crawler\Service\LinkExtractor;
@@ -24,23 +30,56 @@ class Client
      */
     private $scheduler;
 
-    public function __construct(Scheduler $scheduler, HandlerStack $handlerStack)
+    /**
+     * @var array
+     */
+    private $config;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    /**
+     * @var ClientInterface
+     */
+    private $httpClient;
+
+    private function __construct(Scheduler $scheduler, ClientInterface $client, HandlerStack $handlerStack, EventDispatcherInterface $eventDispatcher, array $config)
     {
         $this->stack = $handlerStack;
         $this->scheduler = $scheduler;
+        $this->config = $config;
+        $this->eventDispatcher = $eventDispatcher;
+        $this->httpClient = $client;
     }
 
     public static function create(array $config): self
     {
+
+        $queue = self::getQueue($config);
+
         $stack = self::createHandlerStack($config['handler'] ?? new CurlMultiHandler(new GuzzleCurlMultiHandler));
 
         $httpClient = self::createHttpClient($config, $stack);
 
-        $scheduler = self::createScheduler($config, $httpClient);
+        $dispatcher = self::createEventDispatcher($httpClient, $config, $queue);
 
-        $crawler = new self($scheduler, $stack);
+        $scheduler = self::createScheduler($config, $httpClient, $stack, $dispatcher, $queue);
+
+        $crawler = new self($scheduler, $httpClient, $stack, $dispatcher, $config);
 
         return $crawler;
+    }
+
+    private static function getQueue(array $config): Queue
+    {
+        return $config['queue'] ?? new InMemoryQueue;
+    }
+
+    private static function getHistory(array $config): History
+    {
+        return $config['history'] ?? new InMemoryHistory;
     }
 
     /**
@@ -75,29 +114,31 @@ class Client
      * @param $httpClient
      * @return Scheduler
      */
-    private static function createScheduler(array $config, $httpClient): Scheduler
+    private static function createScheduler(array $config, ClientInterface $httpClient, HandlerStack $handlerStack, EventDispatcherInterface $eventDispatcher, Queue $queue): Scheduler
     {
         $linkExtractor = LinkExtractor::fromConfig($config);
 
-        $history = $config['history'] ?? new InMemoryHistory;
-
-        $queue = $config['queue'] ?? new InMemoryQueue;
-
         $scheduler = new Scheduler(
             $httpClient,
-            $history,
+            $handlerStack,
+            $eventDispatcher,
+            self::getHistory($config),
             $queue,
             $linkExtractor,
             $config['concurrency'] ?? 10
         );
 
-        if (! isset($config['start_url'])) {
-            throw new \RuntimeException('Please specify the start URI.');
-        }
-
-        $scheduler->queue(new Request('GET', $config['start_url']));
-
         return $scheduler;
+    }
+
+    private static function createEventDispatcher(ClientInterface $httpClient, array $config, Queue $queue): EventDispatcherInterface
+    {
+        $dispatcher = new EventDispatcher;
+
+        $dispatcher->addListener(BeforeEngineStarted::class, [new Authenticator($httpClient), 'beforeEngineStarted']);
+        $dispatcher->addListener(ResponseReceived::class, [new RedirectScheduler($queue), 'responseReceived']);
+
+        return $dispatcher;
     }
 
     /**
@@ -122,15 +163,7 @@ class Client
      */
     public function withAuth(array $authOptions): self
     {
-        $body = http_build_query($authOptions['form_params'], '', '&');
-        $request = new Request(
-            'POST',
-            $authOptions['loginUri'],
-            ['content-type' => 'application/x-www-form-urlencoded'],
-            $body
-        );
-
-        $this->scheduler->queue($request);
+        $this->config['auth'] = $authOptions;
 
         return $this;
     }
@@ -142,6 +175,14 @@ class Client
 
     public function run(): void
     {
+        if (! isset($this->config['start_url'])) {
+            throw new \RuntimeException('Please specify the start URI.');
+        }
+
+        $this->eventDispatcher->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted($this->config));
+
+        $this->scheduler->queue(new Request('GET', $this->config['start_url']));
+
         $this->scheduler->run();
     }
 
@@ -154,7 +195,8 @@ class Client
         $configuration = [
             'debug' => false,
             'verify' => false,
-            'cookies' => true
+            'cookies' => true,
+            'allow_redirects' => false
         ];
 
         $configuration = array_merge($configuration, $config);
