@@ -1,11 +1,10 @@
 <?php
 
-namespace Zstate\Crawler;
-
+namespace Zstate\Crawler\Storage;
 
 use Psr\Http\Message\RequestInterface;
 
-interface Queue
+interface QueueInterface
 {
     public function enqueue(RequestInterface $request): void;
 

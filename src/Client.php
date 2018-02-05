@@ -17,6 +17,12 @@ use Zstate\Crawler\Listener\RedirectScheduler;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
 use Zstate\Crawler\Service\LinkExtractor;
+use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
+use Zstate\Crawler\Storage\Adapter\SqliteDsn;
+use Zstate\Crawler\Storage\History;
+use Zstate\Crawler\Storage\HistoryInterface;
+use Zstate\Crawler\Storage\Queue;
+use Zstate\Crawler\Storage\QueueInterface;
 
 class Client
 {
@@ -45,7 +51,12 @@ class Client
      */
     private $httpClient;
 
-    private function __construct(Scheduler $scheduler, ClientInterface $client, HandlerStack $handlerStack, EventDispatcherInterface $eventDispatcher, array $config)
+    private function __construct(
+        Scheduler $scheduler,
+        ClientInterface $client,
+        HandlerStack $handlerStack,
+        EventDispatcherInterface $eventDispatcher,
+        array $config)
     {
         $this->stack = $handlerStack;
         $this->scheduler = $scheduler;
@@ -72,14 +83,18 @@ class Client
         return $crawler;
     }
 
-    private static function getQueue(array $config): Queue
+    private static function getQueue(array $config): QueueInterface
     {
-        return $config['queue'] ?? new InMemoryQueue;
+        $dsn = self::getDsnFromConfig($config);
+
+        return new Queue(new SqliteAdapter(new SqliteDsn($dsn)));
     }
 
-    private static function getHistory(array $config): History
+    private static function getHistory(array $config): HistoryInterface
     {
-        return $config['history'] ?? new InMemoryHistory;
+        $dsn = self::getDsnFromConfig($config);
+
+        return new History(new SqliteAdapter(new SqliteDsn($dsn)));
     }
 
     /**
@@ -109,12 +124,13 @@ class Client
         return $httpClient;
     }
 
-    /**
-     * @param array $config
-     * @param $httpClient
-     * @return Scheduler
-     */
-    private static function createScheduler(array $config, ClientInterface $httpClient, HandlerStack $handlerStack, EventDispatcherInterface $eventDispatcher, Queue $queue): Scheduler
+    private static function createScheduler(
+        array $config,
+        ClientInterface $httpClient,
+        HandlerStack $handlerStack,
+        EventDispatcherInterface $eventDispatcher,
+        QueueInterface $queue
+    ): Scheduler
     {
         $linkExtractor = LinkExtractor::fromConfig($config);
 
@@ -131,7 +147,7 @@ class Client
         return $scheduler;
     }
 
-    private static function createEventDispatcher(ClientInterface $httpClient, array $config, Queue $queue): EventDispatcherInterface
+    private static function createEventDispatcher(ClientInterface $httpClient, array $config, QueueInterface $queue): EventDispatcherInterface
     {
         $dispatcher = new EventDispatcher;
 
@@ -139,6 +155,19 @@ class Client
         $dispatcher->addListener(ResponseReceived::class, [new RedirectScheduler($queue), 'responseReceived']);
 
         return $dispatcher;
+    }
+
+    /**
+     * @param array $config
+     * @return string
+     */
+    private static function getDsnFromConfig(array $config): string
+    {
+        $dsn = 'sqlite::memory:';
+        if (isset($config['save_progress_in'])) {
+            $dsn = 'sqlite:' . $config['save_progress_in'];
+        }
+        return $dsn;
     }
 
     /**

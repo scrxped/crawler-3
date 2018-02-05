@@ -154,14 +154,14 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         // Getting more results due to redirects
         $expected = [
-            0 => 'Process Request: POST http://site2.local/admin/login.php username=test&password=password',
-            1 => 'Process Response: http://site2.local/admin/login.php status:200',
-            2 => 'Process Request: GET http://site2.local/admin/',
-            3 => 'Process Response: http://site2.local/admin/ status:200',
-            4 => 'Process Request: GET http://site2.local/admin/restricted.php',
-            5 => 'Process Request: GET http://site2.local/admin/logout.php',
-            6 => 'Process Response: http://site2.local/admin/restricted.php status:200',
-            7 => 'Process Response: http://site2.local/admin/logout.php status:200',
+                0 => 'Process Request: POST http://site2.local/admin/login.php username=test&password=password',
+                1 => 'Process Response: http://site2.local/admin/login.php status:302',
+                2 => 'Process Request: GET http://site2.local/admin/',
+                3 => 'Process Response: http://site2.local/admin/ status:200',
+                4 => 'Process Request: GET http://site2.local/admin/restricted.php',
+                5 => 'Process Request: GET http://site2.local/admin/logout.php',
+                6 => 'Process Response: http://site2.local/admin/restricted.php status:200',
+                7 => 'Process Response: http://site2.local/admin/logout.php status:302'
         ];
 
 
@@ -293,45 +293,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $log->getLog());
     }
 
-    public function testReferer()
-    {
-        $log = new class implements Middleware {
-
-            private $count = 0;
-
-            public function processRequest(RequestInterface $request, array $options): RequestInterface
-            {
-                echo "Process Request: {$request->getMethod()} " . (string)$request->getUri() . PHP_EOL;
-
-                return $request;
-            }
-
-            public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
-            {
-                $this->count++;
-                echo "{$this->count}. Process Response: " . (string)$request->getUri() . " status:" . $response->getStatusCode() . " <- Referer: " . $request->getHeaderLine('Referer') . PHP_EOL;
-
-                return $response;
-            }
-
-            public function processFailure(RequestInterface $request, \Exception $reason): \Exception
-            {
-                $reasonMessage = $reason->getMessage();
-
-                echo "Process Failure:" . (string)$request->getUri() . " message: " . $reasonMessage . "\n Referer: " . $request->getHeaderLine('Referer') . PHP_EOL;;
-
-                return $reason;
-            }
-        };
-
-        $client = $this->getClient('http://site1.local/');
-        $client->withLog($log);
-
-        $client->run();
-    }
-
-
-
     private function getClient($startUrl)
     {
         $config = [
@@ -366,12 +327,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
 
         $client->run();
 
-        var_export($log->getLog());
-
         $expected = [
             0 => 'Process Request: GET http://site1.local/redirect/',
-            1 => 'Process Response: http://site1.local/redirect/ status:200',
-            2 => 'Process Request: GET http://site1.local/redirect/other.html?test=1',
+            1 => 'Process Response: http://site1.local/redirect/ status:302',
+            2 => 'Process Request: GET http://site1.local/redirect/index1.php',
+            3 => 'Process Response: http://site1.local/redirect/index1.php status:302',
+            4 => 'Process Request: GET http://site1.local/redirect/other.html',
+            5 => 'Process Response: http://site1.local/redirect/other.html status:200',
+            6 => 'Process Request: GET http://site1.local/redirect/other.html?test=1',
+            7 => 'Process Response: http://site1.local/redirect/other.html?test=1 status:200',
         ];
         $this->assertEquals($expected, $log->getLog());
     }

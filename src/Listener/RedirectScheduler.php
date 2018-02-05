@@ -9,16 +9,16 @@ use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Event\ResponseReceived;
-use Zstate\Crawler\Queue;
+use Zstate\Crawler\Storage\QueueInterface;
 
 class RedirectScheduler
 {
     /**
-     * @var Queue
+     * @var QueueInterface
      */
     private $queue;
 
-    public function __construct(Queue $queue)
+    public function __construct(QueueInterface $queue)
     {
         $this->queue = $queue;
     }

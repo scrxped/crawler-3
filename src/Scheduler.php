@@ -15,6 +15,8 @@ use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
+use Zstate\Crawler\Storage\HistoryInterface;
+use Zstate\Crawler\Storage\QueueInterface;
 
 class Scheduler
 {
@@ -30,12 +32,12 @@ class Scheduler
     private $client;
 
     /**
-     * @var History
+     * @var HistoryInterface
      */
     private $history;
 
     /**
-     * @var Queue
+     * @var QueueInterface
      */
     private $queue;
 
@@ -63,8 +65,8 @@ class Scheduler
      * @param ClientInterface $client
      * @param HandlerStack $handlerStack
      * @param EventDispatcherInterface $eventDispatcher
-     * @param History $history
-     * @param Queue $queue
+     * @param HistoryInterface $history
+     * @param QueueInterface $queue
      * @param LinkExtractorInterface $linkExtractor
      * @param int $concurrency
      */
@@ -72,8 +74,8 @@ class Scheduler
         ClientInterface $client,
         HandlerStack $handlerStack,
         EventDispatcherInterface $eventDispatcher,
-        History $history,
-        Queue $queue,
+        HistoryInterface $history,
+        QueueInterface $queue,
         LinkExtractorInterface $linkExtractor,
         int $concurrency)
     {
