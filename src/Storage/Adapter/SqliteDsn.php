@@ -10,14 +10,26 @@ class SqliteDsn
      */
     private $dsn;
 
-    public function __construct(string $dsn = null)
+    public function __construct(string $dsn = '')
     {
         $this->dsn = $dsn;
-        if(null === $this->dsn) {
+        if(empty($this->dsn)) {
             $this->dsn = 'sqlite::memory:';
         }
 
         $this->guardDsn($this->dsn);
+    }
+
+    public static function fromString(string $string): self
+    {
+        $string = str_replace('sqlite:', '', $string);
+        $string = trim($string,':');
+
+        if('memory' === $string || empty($string)) {
+            return new self;
+        }
+
+        return new self('sqlite:' . $string);
     }
 
     private function guardDsn(string $dsn): void

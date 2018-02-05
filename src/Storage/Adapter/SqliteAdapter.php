@@ -14,6 +14,11 @@ class SqliteAdapter
         $this->storage->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
+    public static function create(string $memoryOrFilePath): self
+    {
+        return new self(SqliteDsn::fromString($memoryOrFilePath));
+    }
+
     /**
      * @inheritdoc
      */

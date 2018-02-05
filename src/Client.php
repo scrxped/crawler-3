@@ -85,16 +85,16 @@ class Client
 
     private static function getQueue(array $config): QueueInterface
     {
-        $dsn = self::getDsnFromConfig($config);
+        $dsn = $config['save_progress_in'] ?? 'memory';
 
-        return new Queue(new SqliteAdapter(new SqliteDsn($dsn)));
+        return new Queue(SqliteAdapter::create($dsn));
     }
 
     private static function getHistory(array $config): HistoryInterface
     {
-        $dsn = self::getDsnFromConfig($config);
+        $dsn = $config['save_progress_in'] ?? 'memory';
 
-        return new History(new SqliteAdapter(new SqliteDsn($dsn)));
+        return new History(SqliteAdapter::create($dsn));
     }
 
     /**
@@ -155,19 +155,6 @@ class Client
         $dispatcher->addListener(ResponseReceived::class, [new RedirectScheduler($queue), 'responseReceived']);
 
         return $dispatcher;
-    }
-
-    /**
-     * @param array $config
-     * @return string
-     */
-    private static function getDsnFromConfig(array $config): string
-    {
-        $dsn = 'sqlite::memory:';
-        if (isset($config['save_progress_in'])) {
-            $dsn = 'sqlite:' . $config['save_progress_in'];
-        }
-        return $dsn;
     }
 
     /**
