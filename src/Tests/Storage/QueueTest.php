@@ -4,6 +4,7 @@ namespace Zstate\Crawler\Tests\Storage;
 
 use GuzzleHttp\Psr7\Request;
 use PHPUnit_Framework_TestCase;
+use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 use Zstate\Crawler\Storage\Adapter\SqliteDsn;
 use Zstate\Crawler\Storage\Queue;
@@ -17,6 +18,8 @@ class QueueTest extends PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->adapter = new SqliteAdapter(new SqliteDsn('sqlite::memory:'));
+        $storageService = new StorageService($this->adapter);
+        $storageService->importFile(__DIR__ . '/../../Storage/Schema/main.sql');
     }
 
     public function tearDown()

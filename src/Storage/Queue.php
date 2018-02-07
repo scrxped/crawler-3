@@ -18,17 +18,6 @@ class Queue implements QueueInterface
     public function __construct(SqliteAdapter $storageAdapter)
     {
         $this->storageAdapter = $storageAdapter;
-        $this->initialize();
-    }
-
-    private function initialize()
-    {
-        $this->storageAdapter->executeQuery('
-            CREATE TABLE IF NOT EXISTS queue (
-                fingerprint TEXT PRIMARY KEY,
-                data TEXT 
-            )
-        ');
     }
 
     public function enqueue(RequestInterface $request): void

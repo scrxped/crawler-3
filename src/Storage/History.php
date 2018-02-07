@@ -17,17 +17,6 @@ class History implements HistoryInterface
     public function __construct(SqliteAdapter $storageAdapter)
     {
         $this->storageAdapter = $storageAdapter;
-
-        $this->initialize();
-    }
-
-    private function initialize()
-    {
-        $this->storageAdapter->executeQuery('
-            CREATE TABLE IF NOT EXISTS history (
-                fingerprint TEXT PRIMARY KEY 
-            )
-        ');
     }
 
     public function contains(RequestInterface $request): bool
