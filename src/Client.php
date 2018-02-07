@@ -154,7 +154,6 @@ class Client
 
         $this->scheduler = new Scheduler(
             $this->getHttpClient(),
-            $this->getHandlerStack(),
             $this->getDispatcher(),
             $this->getHistory(),
             $this->getQueue(),

@@ -47,10 +47,6 @@ class Scheduler
     private $linkExtractor;
 
     /**
-     * @var HandlerStack
-     */
-    private $handlerStack;
-    /**
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
@@ -63,7 +59,6 @@ class Scheduler
      *   creating a capped pool of promises. There is no limit by default.
      *
      * @param ClientInterface $client
-     * @param HandlerStack $handlerStack
      * @param EventDispatcherInterface $eventDispatcher
      * @param HistoryInterface $history
      * @param QueueInterface $queue
@@ -72,7 +67,6 @@ class Scheduler
      */
     public function __construct(
         ClientInterface $client,
-        HandlerStack $handlerStack,
         EventDispatcherInterface $eventDispatcher,
         HistoryInterface $history,
         QueueInterface $queue,
@@ -84,8 +78,6 @@ class Scheduler
         $this->history = $history;
         $this->queue = $queue;
         $this->linkExtractor = $linkExtractor;
-        $this->handlerStack = $handlerStack;
-
         $this->eventDispatcher = $eventDispatcher;
     }
 
