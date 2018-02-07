@@ -3,17 +3,11 @@
 namespace Zstate\Crawler;
 
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Promise\PromiseInterface;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Zstate\Crawler\Event\ResponseReceived;
-use Zstate\Crawler\Middleware\BaseMiddleware;
-use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\HistoryInterface;
 use Zstate\Crawler\Storage\QueueInterface;
@@ -42,11 +36,6 @@ class Scheduler
     private $queue;
 
     /**
-     * @var LinkExtractorInterface
-     */
-    private $linkExtractor;
-
-    /**
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
@@ -62,7 +51,6 @@ class Scheduler
      * @param EventDispatcherInterface $eventDispatcher
      * @param HistoryInterface $history
      * @param QueueInterface $queue
-     * @param LinkExtractorInterface $linkExtractor
      * @param int $concurrency
      */
     public function __construct(
@@ -70,14 +58,12 @@ class Scheduler
         EventDispatcherInterface $eventDispatcher,
         HistoryInterface $history,
         QueueInterface $queue,
-        LinkExtractorInterface $linkExtractor,
         int $concurrency)
     {
         $this->concurrency = $concurrency;
         $this->client = $client;
         $this->history = $history;
         $this->queue = $queue;
-        $this->linkExtractor = $linkExtractor;
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -156,7 +142,6 @@ class Scheduler
             function (ResponseInterface $response) use ($idx, $request): ResponseInterface {
 
                 $this->eventDispatcher->dispatch(ResponseReceived::class, new ResponseReceived($response, $request));
-                $this->extractAndQueueLinks($response, $request);
                 $this->step($idx);
 
                 return $response;
@@ -174,27 +159,5 @@ class Scheduler
         unset($this->pending[$idx]);
 
         $this->schedule();
-    }
-
-    private function extractAndQueueLinks(ResponseInterface $response, RequestInterface $request): void
-    {
-        $links = $this->linkExtractor->extract($response);
-        $currentUri = $request->getUri();
-
-        foreach ($links as $extractedLink) {
-
-
-            $visitUri = UriResolver::resolve($currentUri, new Uri($extractedLink));
-
-            $request = new Request('GET', $visitUri);
-
-            // Add referer header for logging purposes
-            $request = $request->withHeader('Referer', (string) $currentUri);
-
-            // Don't queue if the request is in the history
-            if(! $this->history->contains($request)) {
-                $this->queue($request);
-            }
-        }
     }
 }

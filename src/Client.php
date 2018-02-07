@@ -7,12 +7,11 @@ use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Handler\CurlMultiHandler;
-use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Listener\Authenticator;
+use Zstate\Crawler\Listener\ExtractAndQueueLinks;
 use Zstate\Crawler\Listener\RedirectScheduler;
 use Zstate\Crawler\Listener\StorageCreator;
 use Zstate\Crawler\Middleware\Middleware;
@@ -20,7 +19,6 @@ use Zstate\Crawler\Middleware\MiddlewareWrapper;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
-use Zstate\Crawler\Storage\Adapter\SqliteDsn;
 use Zstate\Crawler\Storage\History;
 use Zstate\Crawler\Storage\HistoryInterface;
 use Zstate\Crawler\Storage\Queue;
@@ -150,14 +148,11 @@ class Client
     {
         $config = $this->getConfig();
 
-        $linkExtractor = LinkExtractor::fromConfig($config);
-
         $this->scheduler = new Scheduler(
             $this->getHttpClient(),
             $this->getDispatcher(),
             $this->getHistory(),
             $this->getQueue(),
-            $linkExtractor,
             $config['concurrency'] ?? 10
         );
     }
@@ -188,6 +183,11 @@ class Client
         $this->dispatcher->addListener(
             ResponseReceived::class,
             [new RedirectScheduler($this->getQueue()), 'responseReceived']
+        );
+
+        $this->dispatcher->addListener(
+            ResponseReceived::class,
+            [new ExtractAndQueueLinks(LinkExtractor::fromConfig($this->getConfig()), $this->getQueue()), 'responseReceived']
         );
     }
 
