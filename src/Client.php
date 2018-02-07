@@ -14,9 +14,11 @@ use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Listener\Authenticator;
 use Zstate\Crawler\Listener\RedirectScheduler;
+use Zstate\Crawler\Listener\StorageCreator;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
 use Zstate\Crawler\Service\LinkExtractor;
+use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 use Zstate\Crawler\Storage\Adapter\SqliteDsn;
 use Zstate\Crawler\Storage\History;
@@ -26,11 +28,6 @@ use Zstate\Crawler\Storage\QueueInterface;
 
 class Client
 {
-    /**
-     * @var HandlerStack
-     */
-    private $stack;
-
     /**
      * @var Scheduler
      */
@@ -42,119 +39,165 @@ class Client
     private $config;
 
     /**
-     * @var EventDispatcherInterface
-     */
-    private $eventDispatcher;
-
-    /**
      * @var ClientInterface
      */
     private $httpClient;
+    private $storageAdapter;
+    private $queue;
+    /**
+     * @var HandlerStack
+     */
+    private $handlerStack;
+    private $dispatcher;
+    private $history;
 
-    private function __construct(
-        Scheduler $scheduler,
-        ClientInterface $client,
-        HandlerStack $handlerStack,
-        EventDispatcherInterface $eventDispatcher,
-        array $config)
+    public function __construct(array $config)
     {
-        $this->stack = $handlerStack;
-        $this->scheduler = $scheduler;
+        $this->setConfig($config);
+        $this->setStorageAdapter();
+        $this->setQueue();
+        $this->setHistory();
+        $this->setHandlerStack();
+        $this->setHttpClient();
+        $this->setEventDispatcher();
+        $this->setScheduler();
+    }
+
+    private function setConfig(array $config)
+    {
         $this->config = $config;
-        $this->eventDispatcher = $eventDispatcher;
-        $this->httpClient = $client;
-    }
-
-    public static function create(array $config): self
-    {
-
-        $queue = self::getQueue($config);
-
-        $stack = self::createHandlerStack($config['handler'] ?? new CurlMultiHandler(new GuzzleCurlMultiHandler));
-
-        $httpClient = self::createHttpClient($config, $stack);
-
-        $dispatcher = self::createEventDispatcher($httpClient, $config, $queue);
-
-        $scheduler = self::createScheduler($config, $httpClient, $stack, $dispatcher, $queue);
-
-        $crawler = new self($scheduler, $httpClient, $stack, $dispatcher, $config);
-
-        return $crawler;
-    }
-
-    private static function getQueue(array $config): QueueInterface
-    {
-        $dsn = $config['save_progress_in'] ?? 'memory';
-
-        return new Queue(SqliteAdapter::create($dsn));
-    }
-
-    private static function getHistory(array $config): HistoryInterface
-    {
-        $dsn = $config['save_progress_in'] ?? 'memory';
-
-        return new History(SqliteAdapter::create($dsn));
     }
 
     /**
-     * @param Handler $handler
-     * @return HandlerStack
+     * @return array
      */
-    private static function createHandlerStack(Handler $handler): HandlerStack
+    private function getConfig(): array
     {
+        return $this->config;
+    }
+
+    private function setStorageAdapter(): void
+    {
+        $config = $this->getConfig();
+        $dsn = $config['save_progress_in'] ?? 'memory';
+
+        $this->storageAdapter = SqliteAdapter::create($dsn);
+    }
+
+    private function getStorageAdapter(): SqliteAdapter
+    {
+        return $this->storageAdapter;
+    }
+
+    private function setQueue(): void
+    {
+        $this->queue = new Queue($this->getStorageAdapter());
+    }
+
+    private function getQueue(): QueueInterface
+    {
+        return $this->queue;
+    }
+
+    private function setHistory(): void
+    {
+        $this->history = new History($this->getStorageAdapter());
+    }
+
+    /**
+     * @return HistoryInterface
+     */
+    private function getHistory(): HistoryInterface
+    {
+        return $this->history;
+    }
+
+    private function setHandlerStack(): void
+    {
+        $config = $this->getConfig();
+
+        $handler = $config['handler'] ?? new CurlMultiHandler(new GuzzleCurlMultiHandler);
         $stack = HandlerStack::create($handler);
 
-        return $stack;
+        $this->handlerStack = $stack;
+    }
+
+    private function getHandlerStack(): HandlerStack
+    {
+        return $this->handlerStack;
+    }
+
+    private function setHttpClient(): void
+    {
+        $config = $this->getConfig();
+
+        $config['handler'] = $this->getHandlerStack();
+
+        $config = $this->configureDefaults($config);
+
+        $this->httpClient = new GuzzleHttpClient($config);
     }
 
     /**
-     * @param array $config
-     * @param $stack
      * @return ClientInterface
      */
-    private static function createHttpClient(array $config, HandlerStack $stack): ClientInterface
+    private function getHttpClient(): ClientInterface
     {
-        $config['handler'] = $stack;
-
-        $config = self::configureDefaults($config);
-
-        $httpClient = new GuzzleHttpClient($config);
-
-        return $httpClient;
+        return $this->httpClient;
     }
 
-    private static function createScheduler(
-        array $config,
-        ClientInterface $httpClient,
-        HandlerStack $handlerStack,
-        EventDispatcherInterface $eventDispatcher,
-        QueueInterface $queue
-    ): Scheduler
+    private function setScheduler(): void
     {
+        $config = $this->getConfig();
+
         $linkExtractor = LinkExtractor::fromConfig($config);
 
-        $scheduler = new Scheduler(
-            $httpClient,
-            $handlerStack,
-            $eventDispatcher,
-            self::getHistory($config),
-            $queue,
+        $this->scheduler = new Scheduler(
+            $this->getHttpClient(),
+            $this->getHandlerStack(),
+            $this->getDispatcher(),
+            $this->getHistory(),
+            $this->getQueue(),
             $linkExtractor,
             $config['concurrency'] ?? 10
         );
-
-        return $scheduler;
     }
 
-    private static function createEventDispatcher(ClientInterface $httpClient, array $config, QueueInterface $queue): EventDispatcherInterface
+    /**
+     * @return Scheduler
+     */
+    private function getScheduler(): Scheduler
     {
-        $dispatcher = new EventDispatcher;
+        return $this->scheduler;
+    }
 
-        $dispatcher->addListener(BeforeEngineStarted::class, [new Authenticator($httpClient), 'beforeEngineStarted']);
-        $dispatcher->addListener(ResponseReceived::class, [new RedirectScheduler($queue), 'responseReceived']);
 
-        return $dispatcher;
+    private function setEventDispatcher(): void
+    {
+        $this->dispatcher = new EventDispatcher;
+
+        $this->dispatcher->addListener(
+            BeforeEngineStarted::class,
+            [new Authenticator($this->getHttpClient()), 'beforeEngineStarted']
+        );
+
+        $this->dispatcher->addListener(
+            BeforeEngineStarted::class,
+            [new StorageCreator(new StorageService($this->getStorageAdapter())), 'beforeEngineStarted']
+        );
+
+        $this->dispatcher->addListener(
+            ResponseReceived::class,
+            [new RedirectScheduler($this->getQueue()), 'responseReceived']
+        );
+    }
+
+    /**
+     * @return EventDispatcher
+     */
+    private function getDispatcher(): EventDispatcher
+    {
+        return $this->dispatcher;
     }
 
     /**
@@ -166,7 +209,7 @@ class Client
     {
         $middlewareCallable = new MiddlewareWrapper($middleware);
 
-        $this->stack->push($middlewareCallable, get_class($middleware));
+        $this->getHandlerStack()->push($middlewareCallable, get_class($middleware));
     }
 
     /**
@@ -186,27 +229,31 @@ class Client
 
     public function withLog(Middleware $middleware): void
     {
-        $this->stack->unshift(new MiddlewareWrapper($middleware), get_class($middleware));
+        $this->getHandlerStack()->unshift(new MiddlewareWrapper($middleware), get_class($middleware));
     }
 
     public function run(): void
     {
-        if (! isset($this->config['start_url'])) {
+        $config = $this->getConfig();
+
+        if (! isset($config['start_url'])) {
             throw new \RuntimeException('Please specify the start URI.');
         }
 
-        $this->eventDispatcher->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted($this->config));
+        $this->getDispatcher()->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted($config));
 
-        $this->scheduler->queue(new Request('GET', $this->config['start_url']));
+        $scheduler = $this->getScheduler();
 
-        $this->scheduler->run();
+        $scheduler->queue(new Request('GET', $config['start_url']));
+
+        $scheduler->run();
     }
 
     /**
      * @param array $config
      * @return array
      */
-    private static function configureDefaults(array $config): array
+    private function configureDefaults(array $config): array
     {
         $configuration = [
             'debug' => false,

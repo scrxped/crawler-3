@@ -126,7 +126,7 @@ class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
             'start_url' => 'http://site1.local/',
             'concurrency' => 4
         ];
-        $crawler = Client::create($config);
+        $crawler = new Client($config);
 
         return $crawler;
     }

@@ -43,7 +43,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             'debug' => $this->debug,
             'concurrency' => 4
         ];
-        $client = Client::create($config);
+        $client = new Client($config);
 
         $history = new HistoryMiddleware;
         $client->addMiddleware($history);
@@ -65,7 +65,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             'allow_domains' => ['site1.local'],
             'concurrency' => 4
         ];
-        $client = Client::create($config);
+        $client = new Client($config);
 
         $history = new HistoryMiddleware;
         $client->addMiddleware($history);
@@ -139,7 +139,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             'start_url' => 'http://site2.local/admin/',
             'debug' => $this->debug,
         ];
-        $client = Client::create($config);
+        $client = new Client($config);
 
         $client->withAuth([
             'loginUri' => 'http://site2.local/admin/login.php',
@@ -300,7 +300,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             'debug' => $this->debug,
             'concurrency' => 1
         ];
-        $client = Client::create($config);
+        $client = new Client($config);
 
         return $client;
     }
@@ -312,7 +312,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'debug' => $this->debug
         ];
-        $client = Client::create($config);
+        $client = new Client($config);
 
         $client->run();
     }
