@@ -3,13 +3,13 @@
 namespace Zstate\Crawler\Tests\Storage;
 
 use GuzzleHttp\Psr7\Request;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\History;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 use Zstate\Crawler\Storage\Adapter\SqliteDsn;
 
-class HistoryTest extends PHPUnit_Framework_TestCase
+class HistoryTest extends TestCase
 {
     private $adapter;
 

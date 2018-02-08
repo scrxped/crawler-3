@@ -8,12 +8,11 @@
         "symfony/console": "^4.0",
         "symfony/dom-crawler": "^4.0",
         "psr/log": "^1.0",
-        "recoil/recoil": "^1.0",
         "symfony/event-dispatcher": "^4.0"
     },
 
     "require-dev": {
-        "phpunit/phpunit": "^5.0"
+        "phpunit/phpunit": "^7.0"
     },
 
     "autoload": {

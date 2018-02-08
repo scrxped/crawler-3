@@ -2,17 +2,15 @@
 
 namespace Zstate\Crawler\Tests;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Client;
-use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Tests\Middleware\LogMiddleware;
 use Zstate\Crawler\Tests\Middleware\HistoryMiddleware;
 use Zstate\Crawler\Tests\Middleware\MiddlewareWithExceptionInProcessFailure;
 use Zstate\Crawler\Tests\Middleware\MiddlewareWithExceptionInProcessRequest;
 use Zstate\Crawler\Tests\Middleware\MiddlewareWithExceptionInProcessResponse;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends TestCase
 {
     private $debug = false;
 

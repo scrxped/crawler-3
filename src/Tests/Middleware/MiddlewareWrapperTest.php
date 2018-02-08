@@ -2,19 +2,12 @@
 
 namespace Zstate\Crawler\Tests\Middleware;
 
-use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Psr7\Response;
-use Symfony\Component\Console\Logger\ConsoleLogger;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Client;
 use Zstate\Crawler\Handler\MockHandler;
-use Zstate\Crawler\InMemoryQueue;
-use Zstate\Crawler\Tests\Middleware\LogMiddleware;
-use Zstate\Crawler\InMemoryHistory;
-use Zstate\Crawler\Service\LinkExtractor;
 
-class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
+class MiddlewareWrapperTest extends TestCase
 {
     public function testMiddleware()
     {

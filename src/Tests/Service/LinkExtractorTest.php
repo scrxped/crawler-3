@@ -3,9 +3,10 @@
 namespace Zstate\Crawler\Tests\Service;
 
 use GuzzleHttp\Psr7\Response;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Service\LinkExtractor;
 
-class LinkExtractorTest extends \PHPUnit_Framework_TestCase
+class LinkExtractorTest extends TestCase
 {
     public function testLinkExtractorFromConfig()
     {

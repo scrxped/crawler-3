@@ -3,9 +3,10 @@
 namespace Zstate\Crawler\Tests\Service;
 
 use GuzzleHttp\Psr7\Request;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Service\RequestFingerprint;
 
-class RequestFingerprintTest extends \PHPUnit_Framework_TestCase
+class RequestFingerprintTest extends TestCase
 {
     public function testUrlQueryOrder()
     {

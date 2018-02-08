@@ -3,13 +3,13 @@
 namespace Zstate\Crawler\Tests\Storage;
 
 use GuzzleHttp\Psr7\Request;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 use Zstate\Crawler\Storage\Adapter\SqliteDsn;
 use Zstate\Crawler\Storage\Queue;
 
-class QueueTest extends PHPUnit_Framework_TestCase
+class QueueTest extends TestCase
 {
     private $adapter;
 
