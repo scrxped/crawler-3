@@ -16,6 +16,7 @@ use Zstate\Crawler\Listener\RedirectScheduler;
 use Zstate\Crawler\Listener\StorageCreator;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
+use Zstate\Crawler\Service\AuthenticatorService;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
@@ -170,9 +171,11 @@ class Client
     {
         $this->dispatcher = new EventDispatcher;
 
-        $this->dispatcher->addListener(
-            BeforeEngineStarted::class,
-            [new Authenticator($this->getHttpClient()), 'beforeEngineStarted']
+        $this->dispatcher->addSubscriber(
+            new Authenticator(
+                $this->getHttpClient(),
+                $this->getConfig()
+            )
         );
 
         $this->dispatcher->addListener(
@@ -209,21 +212,6 @@ class Client
         $middlewareCallable = new MiddlewareWrapper($middleware);
 
         $this->getHandlerStack()->push($middlewareCallable, get_class($middleware));
-    }
-
-    /**
-     * @param array $authOptions
-     * [
-     *   'loginUri' => 'http://site2.local/admin/login.php',
-     *   'form_params' => ['username' => 'test', 'password' => 'password']
-     * ]
-     * @return Client
-     */
-    public function withAuth(array $authOptions): self
-    {
-        $this->config['auth'] = $authOptions;
-
-        return $this;
     }
 
     public function withLog(Middleware $middleware): void

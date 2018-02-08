@@ -138,13 +138,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => 'http://site2.local/admin/',
             'debug' => $this->debug,
+            'auth' => [
+                'loginUri' => 'http://site2.local/admin/login.php',
+                'form_params' => ['username' => 'test', 'password' => 'password']
+            ]
         ];
         $client = new Client($config);
-
-        $client->withAuth([
-            'loginUri' => 'http://site2.local/admin/login.php',
-            'form_params' => ['username' => 'test', 'password' => 'password']
-        ]);
 
         $log = new LogMiddleware;
 
@@ -160,8 +159,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             3 => 'Process Response: http://site2.local/admin/ status:200',
             4 => 'Process Request: GET http://site2.local/admin/restricted.php',
             5 => 'Process Request: GET http://site2.local/admin/logout.php',
-            6 => 'Process Response: http://site2.local/admin/logout.php status:302',
-            7 => 'Process Response: http://site2.local/admin/restricted.php status:200'
+            6 => 'Process Response: http://site2.local/admin/restricted.php status:200',
+            7 => 'Process Response: http://site2.local/admin/logout.php status:302',
+
         ];
 
 

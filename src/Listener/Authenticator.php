@@ -4,24 +4,59 @@ namespace Zstate\Crawler\Listener;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\UriResolver;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Event\BeforeEngineStarted;
+use Zstate\Crawler\Event\ResponseReceived;
+use function Zstate\Crawler\is_redirect;
+use Zstate\Crawler\Service\AuthenticatorService;
 
-class Authenticator
+class Authenticator implements EventSubscriberInterface
 {
+    /**
+     * @var array
+     */
+    private $config;
     /**
      * @var ClientInterface
      */
-    private $httpClient;
+    private $client;
 
-    public function __construct(ClientInterface $httpClient)
+    public function __construct(ClientInterface $client, array $config)
     {
-        $this->httpClient = $httpClient;
+        $this->config = $config;
+        $this->client = $client;
     }
 
-    public function beforeEngineStarted(BeforeEngineStarted $event): void
+    public function authenticate(BeforeEngineStarted $event): void
     {
-        $config = $event->getConfig();
+        $this->login($this->config);
+    }
 
+    public function reauthenticate(ResponseReceived $event): void
+    {
+        $request = $event->getRequest();
+        $response = $event->getResponse();
+
+        if(! is_redirect($response)) {
+            return;
+        }
+
+        $authUri = new Uri($this->config['auth']['loginUri']);
+
+        $location = UriResolver::resolve(
+            $request->getUri(),
+            new Uri($response->getHeaderLine('Location'))
+        );
+
+        if(stripos((string)$location, (string)$authUri) !== false) {
+            $this->login($this->config);
+        }
+    }
+
+    private function login(array $config)
+    {
         if(empty($config['auth'])) {
             return;
         }
@@ -39,6 +74,17 @@ class Authenticator
 
         $request = new Request('POST', $authOptions['loginUri'], ['content-type' => 'application/x-www-form-urlencoded'], $body);
 
-        $this->httpClient->send($request);
+        $this->client->send($request);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            BeforeEngineStarted::class => 'authenticate',
+            ResponseReceived::class => 'reauthenticate'
+        ];
     }
 }
