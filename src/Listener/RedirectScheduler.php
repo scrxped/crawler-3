@@ -9,6 +9,7 @@ use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Event\ResponseReceived;
+use function Zstate\Crawler\is_redirect;
 use Zstate\Crawler\Storage\QueueInterface;
 
 class RedirectScheduler
@@ -28,7 +29,7 @@ class RedirectScheduler
         $response = $event->getResponse();
         $request = $event->getRequest();
 
-        if(! $this->isRedirect($response)) {
+        if(! is_redirect($response)) {
             return;
         }
 
@@ -44,14 +45,5 @@ class RedirectScheduler
         $redirectRequest = new Request('GET', $location);
 
         return $redirectRequest;
-    }
-
-    private function isRedirect(ResponseInterface $response)
-    {
-        if (substr($response->getStatusCode(), 0, 1) != '3' || !$response->hasHeader('Location')) {
-            return false;
-        }
-
-        return true;
     }
 }
