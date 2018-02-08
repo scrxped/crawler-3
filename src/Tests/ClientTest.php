@@ -138,7 +138,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $config = [
             'start_url' => 'http://site2.local/admin/',
             'debug' => $this->debug,
-            'auth' => [
+            'authentication' => [
                 'loginUri' => 'http://site2.local/admin/login.php',
                 'form_params' => ['username' => 'test', 'password' => 'password']
             ]

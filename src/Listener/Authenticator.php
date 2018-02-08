@@ -43,7 +43,7 @@ class Authenticator implements EventSubscriberInterface
             return;
         }
 
-        $authUri = new Uri($this->config['auth']['loginUri']);
+        $authUri = new Uri($this->config['authentication']['loginUri']);
 
         $location = UriResolver::resolve(
             $request->getUri(),
@@ -57,7 +57,7 @@ class Authenticator implements EventSubscriberInterface
 
     private function login(array $config)
     {
-        if(empty($config['auth'])) {
+        if(empty($config['authentication'])) {
             return;
         }
 
@@ -68,7 +68,7 @@ class Authenticator implements EventSubscriberInterface
          *   'form_params' => ['username' => 'test', 'password' => 'password']
          * ]
          */
-        $authOptions = $config['auth'];
+        $authOptions = $config['authentication'];
 
         $body = http_build_query($authOptions['form_params'], '', '&');
 
