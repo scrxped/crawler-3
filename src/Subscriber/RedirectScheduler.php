@@ -1,6 +1,7 @@
 <?php
+declare(strict_types=1);
 
-namespace Zstate\Crawler\Listener;
+namespace Zstate\Crawler\Subscriber;
 
 
 use GuzzleHttp\Psr7\Request;
@@ -8,11 +9,12 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
 use Zstate\Crawler\Storage\QueueInterface;
 
-class RedirectScheduler
+class RedirectScheduler implements EventSubscriberInterface
 {
     /**
      * @var QueueInterface
@@ -45,5 +47,12 @@ class RedirectScheduler
         $redirectRequest = new Request('GET', $location);
 
         return $redirectRequest;
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            ResponseReceived::class => 'responseReceived'
+        ];
     }
 }

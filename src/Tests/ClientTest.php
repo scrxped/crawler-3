@@ -37,9 +37,12 @@ class ClientTest extends TestCase
     public function testAnchorsLinks()
     {
         $config = [
-            'start_url' => 'http://site1.local/about/',
-            'debug' => $this->debug,
-            'concurrency' => 4
+            'start_uri' => 'http://site1.local/about/',
+            'concurrency' => 4,
+            'request_options' => [
+                'debug' => $this->debug,
+            ],
+
         ];
         $client = new Client($config);
 
@@ -58,9 +61,13 @@ class ClientTest extends TestCase
     public function testAllowDomains()
     {
         $config = [
-            'start_url' => 'http://site1.local/',
-            'debug' => $this->debug,
-            'allow_domains' => ['site1.local'],
+            'start_uri' => 'http://site1.local/',
+            'request_options' => [
+                'debug' => $this->debug,
+            ],
+            'filter' => [
+                'allow_domains' => ['site1.local'],
+            ],
             'concurrency' => 4
         ];
         $client = new Client($config);
@@ -134,11 +141,13 @@ class ClientTest extends TestCase
     public function testSite2AuthMiddleware()
     {
         $config = [
-            'start_url' => 'http://site2.local/admin/',
-            'debug' => $this->debug,
-            'authentication' => [
-                'loginUri' => 'http://site2.local/admin/login.php',
+            'start_uri' => 'http://site2.local/admin/',
+            'login' => [
+                'login_uri' => 'http://site2.local/admin/login.php',
                 'form_params' => ['username' => 'test', 'password' => 'password']
+            ],
+            'request_options' => [
+                'debug' => $this->debug,
             ]
         ];
         $client = new Client($config);
@@ -294,9 +303,11 @@ class ClientTest extends TestCase
     private function getClient($startUrl)
     {
         $config = [
-            'start_url' => $startUrl,
-            'debug' => $this->debug,
-            'concurrency' => 1
+            'start_uri' => $startUrl,
+            'concurrency' => 1,
+            'request_options' => [
+                'debug' => $this->debug,
+            ]
         ];
         $client = new Client($config);
 
@@ -308,7 +319,9 @@ class ClientTest extends TestCase
         $this->expectException(\RuntimeException::class);
 
         $config = [
-            'debug' => $this->debug
+            'request_options' => [
+                'debug' => $this->debug,
+            ]
         ];
         $client = new Client($config);
 

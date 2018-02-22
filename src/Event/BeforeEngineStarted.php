@@ -3,23 +3,24 @@
 namespace Zstate\Crawler\Event;
 
 use Symfony\Component\EventDispatcher\Event;
+use Zstate\Crawler\Config\Config;
 
 class BeforeEngineStarted extends Event
 {
     /**
-     * @var array
+     * @var Config
      */
     private $config;
 
-    public function __construct(array $config)
+    public function __construct(Config $config)
     {
         $this->config = $config;
     }
 
     /**
-     * @return array
+     * @return Config
      */
-    public function getConfig(): array
+    public function getConfig(): Config
     {
         return $this->config;
     }

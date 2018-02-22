@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Zstate\Crawler\Service;
 
@@ -40,7 +41,7 @@ class RequestFingerprint
 
         $uri = self::normalizeUri($request->getUri());
 
-        hash_update($hashContext, $uri);
+        hash_update($hashContext, (string) $uri);
 
         self::hashRequestBody($request, $hashContext);
 

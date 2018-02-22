@@ -7,16 +7,16 @@ use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Request;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Event\BeforeEngineStarted;
-use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Handler\CurlMultiHandler;
-use Zstate\Crawler\Listener\Authenticator;
-use Zstate\Crawler\Listener\ExtractAndQueueLinks;
-use Zstate\Crawler\Listener\RedirectScheduler;
-use Zstate\Crawler\Listener\StorageCreator;
+use Zstate\Crawler\Handler\Handler;
+use Zstate\Crawler\Subscriber\Authenticator;
+use Zstate\Crawler\Subscriber\ExtractAndQueueLinks;
+use Zstate\Crawler\Subscriber\RedirectScheduler;
+use Zstate\Crawler\Subscriber\Storage;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
-use Zstate\Crawler\Service\AuthenticatorService;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
@@ -49,6 +49,7 @@ class Client
     private $handlerStack;
     private $dispatcher;
     private $history;
+    private $handler;
 
     public function __construct(array $config)
     {
@@ -64,13 +65,13 @@ class Client
 
     private function setConfig(array $config)
     {
-        $this->config = $config;
+        $this->config = Config::fromArray($config);
     }
 
     /**
      * @return array
      */
-    private function getConfig(): array
+    private function getConfig(): Config
     {
         return $this->config;
     }
@@ -78,7 +79,7 @@ class Client
     private function setStorageAdapter(): void
     {
         $config = $this->getConfig();
-        $dsn = $config['save_progress_in'] ?? 'memory';
+        $dsn = $config->saveProgressIn();
 
         $this->storageAdapter = SqliteAdapter::create($dsn);
     }
@@ -111,12 +112,25 @@ class Client
         return $this->history;
     }
 
+    public function setHandler(Handler $handler)
+    {
+        $this->handler = $handler;
+
+        $this->getHandlerStack()->setHandler($this->handler);
+    }
+
+    private function getHandler(): Handler
+    {
+        if(null === $this->handler) {
+            return new CurlMultiHandler(new GuzzleCurlMultiHandler);
+        }
+
+        return $this->handler;
+    }
+
     private function setHandlerStack(): void
     {
-        $config = $this->getConfig();
-
-        $handler = $config['handler'] ?? new CurlMultiHandler(new GuzzleCurlMultiHandler);
-        $stack = HandlerStack::create($handler);
+        $stack = HandlerStack::create($this->getHandler());
 
         $this->handlerStack = $stack;
     }
@@ -128,11 +142,9 @@ class Client
 
     private function setHttpClient(): void
     {
-        $config = $this->getConfig();
+        $config = $this->getConfig()->requestOptions();
 
         $config['handler'] = $this->getHandlerStack();
-
-        $config = $this->configureDefaults($config);
 
         $this->httpClient = new GuzzleHttpClient($config);
     }
@@ -147,14 +159,12 @@ class Client
 
     private function setScheduler(): void
     {
-        $config = $this->getConfig();
-
         $this->scheduler = new Scheduler(
             $this->getHttpClient(),
             $this->getDispatcher(),
             $this->getHistory(),
             $this->getQueue(),
-            $config['concurrency'] ?? 10
+            $this->getConfig()->concurrency()
         );
     }
 
@@ -170,27 +180,28 @@ class Client
     private function setEventDispatcher(): void
     {
         $this->dispatcher = new EventDispatcher;
+        $config = $this->getConfig();
+
+
+        if(null !== $config->loginOptions()) {
+            $this->dispatcher->addSubscriber(
+                new Authenticator(
+                    $this->getHttpClient(),
+                    $config->loginOptions()
+                )
+            );
+        }
 
         $this->dispatcher->addSubscriber(
-            new Authenticator(
-                $this->getHttpClient(),
-                $this->getConfig()
-            )
+            new Storage(new StorageService($this->getStorageAdapter()))
         );
 
-        $this->dispatcher->addListener(
-            BeforeEngineStarted::class,
-            [new StorageCreator(new StorageService($this->getStorageAdapter())), 'beforeEngineStarted']
+        $this->dispatcher->addSubscriber(
+            new RedirectScheduler($this->getQueue())
         );
 
-        $this->dispatcher->addListener(
-            ResponseReceived::class,
-            [new RedirectScheduler($this->getQueue()), 'responseReceived']
-        );
-
-        $this->dispatcher->addListener(
-            ResponseReceived::class,
-            [new ExtractAndQueueLinks(LinkExtractor::fromConfig($this->getConfig()), $this->getQueue()), 'responseReceived']
+        $this->dispatcher->addSubscriber(
+            new ExtractAndQueueLinks(new LinkExtractor($this->getConfig()->filterOptions()), $this->getQueue())
         );
     }
 
@@ -223,34 +234,15 @@ class Client
     {
         $config = $this->getConfig();
 
-        if (! isset($config['start_url'])) {
-            throw new \RuntimeException('Please specify the start URI.');
-        }
-
-        $this->getDispatcher()->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted($config));
+        $this->getDispatcher()->dispatch(
+            BeforeEngineStarted::class,
+            new BeforeEngineStarted($config)
+        );
 
         $scheduler = $this->getScheduler();
 
-        $scheduler->queue(new Request('GET', $config['start_url']));
+        $scheduler->queue(new Request('GET', $config->startUri()));
 
         $scheduler->run();
-    }
-
-    /**
-     * @param array $config
-     * @return array
-     */
-    private function configureDefaults(array $config): array
-    {
-        $configuration = [
-            'debug' => false,
-            'verify' => false,
-            'cookies' => true,
-            'allow_redirects' => false
-        ];
-
-        $configuration = array_merge($configuration, $config);
-
-        return $configuration;
     }
 }

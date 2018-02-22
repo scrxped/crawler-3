@@ -5,6 +5,7 @@ namespace Zstate\Crawler\Tests\Middleware;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Handler\MockHandler;
 
 class MiddlewareWrapperTest extends TestCase
@@ -112,14 +113,14 @@ class MiddlewareWrapperTest extends TestCase
      * @param $handler
      * @return Client
      */
-    private function getClient($handler)
+    private function getClient(Handler $handler): Client
     {
         $config = [
-            'handler' => $handler,
-            'start_url' => 'http://site1.local/',
+            'start_uri' => 'http://site1.local/',
             'concurrency' => 4
         ];
         $crawler = new Client($config);
+        $crawler->setHandler($handler);
 
         return $crawler;
     }

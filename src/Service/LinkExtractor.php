@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
+
 namespace Zstate\Crawler\Service;
 
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Zstate\Crawler\Config\FilterOptions;
 
 class LinkExtractor implements LinkExtractorInterface
 {
@@ -16,47 +19,25 @@ class LinkExtractor implements LinkExtractorInterface
     /**
      * @var array
      */
+    private $allowedUriPatterns = [];
+
+    /**
+     * @var array
+     */
     private $allowedDomains = [];
-
     /**
-     * @param array $config
-     * @return LinkExtractor
+     * @var FilterOptions
      */
-    public static function fromConfig(array $config): self
-    {
-        $extractor = new self;
+    private $filterOptions;
 
-        if (! empty($config['deny'])) {
-            $extractor->deny($config['deny']);
+
+    public function __construct(? FilterOptions $filterOptions)
+    {
+        if(null !== $filterOptions) {
+            $this->allowedUriPatterns = $filterOptions->allow();
+            $this->deniedUriPatterns = $filterOptions->deny();
+            $this->allowedDomains = $filterOptions->allowDomains();
         }
-
-        if (! empty($config['allow_domains'])) {
-            $extractor->allowDomains($config['allow_domains']);
-        }
-
-        return $extractor;
-    }
-
-    /**
-     * @param array $deniedUriPatterns links
-     * @return LinkExtractor
-     */
-    public function deny(array $deniedUriPatterns): self
-    {
-        $this->deniedUriPatterns = $deniedUriPatterns;
-
-        return $this;
-    }
-
-    /**
-     * @param array $allowedDomains
-     * @return LinkExtractor
-     */
-    public function allowDomains(array $allowedDomains): self
-    {
-        $this->allowedDomains = $allowedDomains;
-
-        return $this;
     }
 
     /**
@@ -120,22 +101,38 @@ class LinkExtractor implements LinkExtractorInterface
      */
     private function isUriAllowed(UriInterface $uri): bool
     {
-        if (empty($this->deniedUriPatterns)) {
+        if (empty($this->deniedUriPatterns) && empty($this->allowedUriPatterns)) {
             return true;
         }
 
-        foreach ($this->deniedUriPatterns as $pattern) {
-            $match = preg_match("/" . $pattern . "/i", $uri->__toString());
+        foreach ($this->allowedUriPatterns as $pattern) {
+            if ($this->isUriMatchedPattern($uri, $pattern)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-            //An error in pattern
-            if (false === $match) {
-                throw new \InvalidArgumentException('Invalid pattern.');
-            } elseif (1 === $match) {
+        foreach ($this->deniedUriPatterns as $pattern) {
+            if ($this->isUriMatchedPattern($uri, $pattern)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function isUriMatchedPattern(UriInterface $uri, string $pattern): bool
+    {
+        $pattern = preg_quote($pattern, '/');
+
+        $match = preg_match("/" . $pattern . "/i", (string) $uri);
+
+        if(false === $match) {
+            throw new \InvalidArgumentException('Invalid pattern: ' . $pattern);
+        }
+
+        return (bool) $match;
     }
 
     /**

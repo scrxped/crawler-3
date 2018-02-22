@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Zstate\Crawler\Storage;
 
@@ -24,7 +25,7 @@ class Queue implements QueueInterface
     {
         $fingerprint = RequestFingerprint::calculate($request);
 
-        $data = $this->serialize($request);
+        $data = $this->serializeRequest($request);
 
         $this->storageAdapter->executeQuery(
             'INSERT OR IGNORE INTO `queue` (`fingerprint`,`data`) VALUES (?,?)', [$fingerprint, $data]
@@ -42,7 +43,7 @@ class Queue implements QueueInterface
 
         $this->storageAdapter->commit();
 
-        return $this->unserialize($data[0]['data']);
+        return $this->deserializeRequest($data[0]['data']);
     }
 
     public function isEmpty(): bool
@@ -54,10 +55,9 @@ class Queue implements QueueInterface
         }
 
         return false;
-
     }
 
-    private function serialize(RequestInterface $request): string
+    private function serializeRequest(RequestInterface $request): string
     {
         $data = [
             'uri' => (string) $request->getUri(),
@@ -70,13 +70,10 @@ class Queue implements QueueInterface
 
     }
 
-    private function unserialize(string $jsonData): RequestInterface
+    private function deserializeRequest(string $jsonData): RequestInterface
     {
         $data = \GuzzleHttp\json_decode($jsonData,true);
 
         return new Request($data['method'], $data['uri'], $data['headers'], $data['body']);
     }
-
-
-
 }

@@ -1,12 +1,14 @@
 <?php
+declare(strict_types=1);
 
-namespace Zstate\Crawler\Listener;
+namespace Zstate\Crawler\Subscriber;
 
 
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Service\StorageService;
 
-class StorageCreator
+class Storage implements EventSubscriberInterface
 {
     /**
      * @var StorageService
@@ -21,5 +23,12 @@ class StorageCreator
     public function beforeEngineStarted(BeforeEngineStarted $event): void
     {
         $this->storageService->importFile(__DIR__ . '/../Storage/Schema/main.sql');
+    }
+
+    public static function getSubscribedEvents()
+    {
+        return [
+            BeforeEngineStarted::class => 'beforeEngineStarted'
+        ];
     }
 }
