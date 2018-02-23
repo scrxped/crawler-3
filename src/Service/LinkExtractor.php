@@ -25,6 +25,12 @@ class LinkExtractor implements LinkExtractorInterface
      * @var array
      */
     private $allowedDomains = [];
+
+    /**
+     * @var array
+     */
+    private $denyDomains = [];
+
     /**
      * @var FilterOptions
      */
@@ -37,6 +43,7 @@ class LinkExtractor implements LinkExtractorInterface
             $this->allowedUriPatterns = $filterOptions->allow();
             $this->deniedUriPatterns = $filterOptions->deny();
             $this->allowedDomains = $filterOptions->allowDomains();
+            $this->denyDomains = $filterOptions->denyDomains();
         }
     }
 
@@ -83,13 +90,16 @@ class LinkExtractor implements LinkExtractorInterface
      */
     private function isDomainAllowed(UriInterface $uri): bool
     {
-        if (empty($this->allowedDomains)) {
-            return true;
-        }
-
-
         if (Uri::isAbsolute($uri)) {
-            return in_array($uri->getHost(), $this->allowedDomains);
+
+            if(! empty($this->allowedDomains)) {
+                return in_array($uri->getHost(), $this->allowedDomains);
+            }
+
+            if(! empty($this->denyDomains)
+                && in_array($uri->getHost(), $this->denyDomains)) {
+                return false;
+            }
         }
 
         return true;

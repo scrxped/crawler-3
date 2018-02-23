@@ -24,6 +24,9 @@ class ConfigTest extends TestCase
                 'cookies' => true,
                 'allow_redirects' => false,
                 'debug' => false,
+                'connect_timeout' => 0,
+                'timeout' => 0,
+                'delay' => null
             ],
 
         ];
@@ -78,6 +81,10 @@ class ConfigTest extends TestCase
                 'cookies' => true,
                 'allow_redirects' => false,
                 'debug' => false,
+                'connect_timeout' => 0,
+                'timeout' => 0,
+                'delay' => null
+
             ],
             'concurrency' => 10,
             'save_progress_in' => 'memory',
@@ -98,6 +105,7 @@ class ConfigTest extends TestCase
             'filter' => [
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],
+                'deny_domains' => ['test2.com','test3.com'],
                 'deny' => ['test2','test3'],
             ],
             'request_options' => [
@@ -105,6 +113,9 @@ class ConfigTest extends TestCase
                 'cookies' => true,
                 'allow_redirects' => false,
                 'debug' => true,
+                'connect_timeout' => 0,
+                'timeout' => 0,
+                'delay' => 0
             ]
         ]);
 
@@ -121,6 +132,7 @@ class ConfigTest extends TestCase
             'filter' => [
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],
+                'deny_domains' => ['test2.com','test3.com'],
                 'deny' => ['test2','test3'],
             ],
             'request_options' => [
@@ -128,6 +140,9 @@ class ConfigTest extends TestCase
                 'cookies' => true,
                 'allow_redirects' => false,
                 'debug' => true,
+                'connect_timeout' => 0,
+                'timeout' => 0,
+                'delay' => 0
             ],
             'concurrency' => 10,
             'save_progress_in' => 'memory',

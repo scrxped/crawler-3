@@ -30,6 +30,11 @@ class FilterOptions
         return $this->get('allow_domains');
     }
 
+    public function denyDomains(): array
+    {
+        return $this->get('deny_domains');
+    }
+
     public function deny(): array
     {
         return $this->get('deny');

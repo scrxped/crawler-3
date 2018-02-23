@@ -69,4 +69,24 @@ class LinkExtractorTest extends TestCase
 
         $this->assertEquals(['/test', '/test#someAnchor', '/logout'], $links);
     }
+
+
+    public function testDenyDomains()
+    {
+        $extractor = new LinkExtractor(new FilterOptions([
+            'deny_domains' => ['www.test.com']
+        ]));
+
+        $response = new Response(
+            200,
+            [],
+            '<a href="/test">test</a>'
+            . '<a href="http://www.test.com/test1">test</a>'
+            . '<a href="/logout">logout</a>'
+        );
+
+        $links = $extractor->extract($response);
+
+        $this->assertEquals(['/test', '/logout'], $links);
+    }
 }
