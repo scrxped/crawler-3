@@ -6,5 +6,4 @@ services:
   - docker
 
 script:
-  - make up
-  - make test
+  - make up composer-istall test

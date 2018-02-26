@@ -20,6 +20,16 @@ up:
 ssh:
 	docker exec -it site1-local bash
 
+composer-istall:
+	docker-compose run --rm \
+	site1.local \
+	composer install
+
+composer-update:
+	docker-compose run --rm \
+	site1.local \
+	composer update
+
 test:
 	docker-compose exec \
 	site1.local \
