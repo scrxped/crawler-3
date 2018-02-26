@@ -1,0 +1,10 @@
+language: php
+
+sudo: required
+
+services:
+  - docker
+
+script:
+  - make up
+  - make test
