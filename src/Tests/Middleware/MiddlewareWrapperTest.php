@@ -2,19 +2,13 @@
 
 namespace Zstate\Crawler\Tests\Middleware;
 
-use GuzzleHttp\MessageFormatter;
 use GuzzleHttp\Psr7\Response;
-use Symfony\Component\Console\Logger\ConsoleLogger;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Output\OutputInterface;
+use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Handler\MockHandler;
-use Zstate\Crawler\InMemoryQueue;
-use Zstate\Crawler\Tests\Middleware\LogMiddleware;
-use Zstate\Crawler\InMemoryHistory;
-use Zstate\Crawler\Service\LinkExtractor;
 
-class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
+class MiddlewareWrapperTest extends TestCase
 {
     public function testMiddleware()
     {
@@ -119,14 +113,14 @@ class MiddlewareWrapperTest extends \PHPUnit_Framework_TestCase
      * @param $handler
      * @return Client
      */
-    private function getClient($handler)
+    private function getClient(Handler $handler): Client
     {
         $config = [
-            'handler' => $handler,
-            'start_url' => 'http://site1.local/',
+            'start_uri' => 'http://site1.local/',
             'concurrency' => 4
         ];
         $crawler = new Client($config);
+        $crawler->setHandler($handler);
 
         return $crawler;
     }

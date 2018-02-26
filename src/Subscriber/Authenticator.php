@@ -1,12 +1,14 @@
 <?php
+declare(strict_types=1);
 
-namespace Zstate\Crawler\Listener;
+namespace Zstate\Crawler\Subscriber;
 
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Zstate\Crawler\Config\LoginOptions;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
@@ -15,7 +17,7 @@ use Zstate\Crawler\Service\AuthenticatorService;
 class Authenticator implements EventSubscriberInterface
 {
     /**
-     * @var array
+     * @var LoginOptions
      */
     private $config;
     /**
@@ -23,7 +25,7 @@ class Authenticator implements EventSubscriberInterface
      */
     private $client;
 
-    public function __construct(ClientInterface $client, array $config)
+    public function __construct(ClientInterface $client, LoginOptions $config)
     {
         $this->config = $config;
         $this->client = $client;
@@ -34,16 +36,20 @@ class Authenticator implements EventSubscriberInterface
         $this->login($this->config);
     }
 
-    public function reauthenticate(ResponseReceived $event): void
+    public function relogin(ResponseReceived $event): void
     {
         $request = $event->getRequest();
         $response = $event->getResponse();
+
+        if(! $this->config->relogin()) {
+            return;
+        }
 
         if(! is_redirect($response)) {
             return;
         }
 
-        $authUri = new Uri($this->config['auth']['loginUri']);
+        $authUri = new Uri($this->config->loginUri());
 
         $location = UriResolver::resolve(
             $request->getUri(),
@@ -55,12 +61,8 @@ class Authenticator implements EventSubscriberInterface
         }
     }
 
-    private function login(array $config)
+    private function login(LoginOptions $config)
     {
-        if(empty($config['auth'])) {
-            return;
-        }
-
         /**
          * @param array $authOptions
          * [
@@ -68,11 +70,15 @@ class Authenticator implements EventSubscriberInterface
          *   'form_params' => ['username' => 'test', 'password' => 'password']
          * ]
          */
-        $authOptions = $config['auth'];
 
-        $body = http_build_query($authOptions['form_params'], '', '&');
+        $body = http_build_query($config->formParams(), '', '&');
 
-        $request = new Request('POST', $authOptions['loginUri'], ['content-type' => 'application/x-www-form-urlencoded'], $body);
+        $request = new Request(
+            'POST',
+            $config->loginUri(),
+            ['content-type' => 'application/x-www-form-urlencoded'],
+            $body
+        );
 
         $this->client->send($request);
     }
@@ -84,7 +90,7 @@ class Authenticator implements EventSubscriberInterface
     {
         return [
             BeforeEngineStarted::class => 'authenticate',
-            ResponseReceived::class => 'reauthenticate'
+            ResponseReceived::class => 'relogin'
         ];
     }
 }

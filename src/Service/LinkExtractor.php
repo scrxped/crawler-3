@@ -1,10 +1,13 @@
 <?php
+declare(strict_types=1);
+
 namespace Zstate\Crawler\Service;
 
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
 use Symfony\Component\DomCrawler\Crawler;
+use Zstate\Crawler\Config\FilterOptions;
 
 class LinkExtractor implements LinkExtractorInterface
 {
@@ -16,47 +19,32 @@ class LinkExtractor implements LinkExtractorInterface
     /**
      * @var array
      */
+    private $allowedUriPatterns = [];
+
+    /**
+     * @var array
+     */
     private $allowedDomains = [];
 
     /**
-     * @param array $config
-     * @return LinkExtractor
+     * @var array
      */
-    public static function fromConfig(array $config): self
-    {
-        $extractor = new self;
-
-        if (! empty($config['deny'])) {
-            $extractor->deny($config['deny']);
-        }
-
-        if (! empty($config['allow_domains'])) {
-            $extractor->allowDomains($config['allow_domains']);
-        }
-
-        return $extractor;
-    }
+    private $denyDomains = [];
 
     /**
-     * @param array $deniedUriPatterns links
-     * @return LinkExtractor
+     * @var FilterOptions
      */
-    public function deny(array $deniedUriPatterns): self
+    private $filterOptions;
+
+
+    public function __construct(? FilterOptions $filterOptions)
     {
-        $this->deniedUriPatterns = $deniedUriPatterns;
-
-        return $this;
-    }
-
-    /**
-     * @param array $allowedDomains
-     * @return LinkExtractor
-     */
-    public function allowDomains(array $allowedDomains): self
-    {
-        $this->allowedDomains = $allowedDomains;
-
-        return $this;
+        if(null !== $filterOptions) {
+            $this->allowedUriPatterns = $filterOptions->allow();
+            $this->deniedUriPatterns = $filterOptions->deny();
+            $this->allowedDomains = $filterOptions->allowDomains();
+            $this->denyDomains = $filterOptions->denyDomains();
+        }
     }
 
     /**
@@ -102,13 +90,16 @@ class LinkExtractor implements LinkExtractorInterface
      */
     private function isDomainAllowed(UriInterface $uri): bool
     {
-        if (empty($this->allowedDomains)) {
-            return true;
-        }
-
-
         if (Uri::isAbsolute($uri)) {
-            return in_array($uri->getHost(), $this->allowedDomains);
+
+            if(! empty($this->allowedDomains)) {
+                return in_array($uri->getHost(), $this->allowedDomains);
+            }
+
+            if(! empty($this->denyDomains)
+                && in_array($uri->getHost(), $this->denyDomains)) {
+                return false;
+            }
         }
 
         return true;
@@ -120,22 +111,38 @@ class LinkExtractor implements LinkExtractorInterface
      */
     private function isUriAllowed(UriInterface $uri): bool
     {
-        if (empty($this->deniedUriPatterns)) {
+        if (empty($this->deniedUriPatterns) && empty($this->allowedUriPatterns)) {
             return true;
         }
 
-        foreach ($this->deniedUriPatterns as $pattern) {
-            $match = preg_match("/" . $pattern . "/i", $uri->__toString());
+        foreach ($this->allowedUriPatterns as $pattern) {
+            if ($this->isUriMatchedPattern($uri, $pattern)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-            //An error in pattern
-            if (false === $match) {
-                throw new \InvalidArgumentException('Invalid pattern.');
-            } elseif (1 === $match) {
+        foreach ($this->deniedUriPatterns as $pattern) {
+            if ($this->isUriMatchedPattern($uri, $pattern)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function isUriMatchedPattern(UriInterface $uri, string $pattern): bool
+    {
+        $pattern = preg_quote($pattern, '/');
+
+        $match = preg_match("/" . $pattern . "/i", (string) $uri);
+
+        if(false === $match) {
+            throw new \InvalidArgumentException('Invalid pattern: ' . $pattern);
+        }
+
+        return (bool) $match;
     }
 
     /**
