@@ -7,3 +7,6 @@ services:
 
 script:
   - make up composer-istall test
+
+after_success:
+  -

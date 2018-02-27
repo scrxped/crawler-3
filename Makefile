@@ -1,3 +1,5 @@
+RUN_COMMAND=docker-compose run --rm site1.local
+
 PHPUNIT_FLAGS=
 
 ifdef filter
@@ -21,19 +23,17 @@ ssh:
 	docker exec -it site1-local bash
 
 composer-istall:
-	docker-compose run --rm \
-	site1.local \
-	composer install
+	$(RUN_COMMAND) composer install
 
 composer-update:
-	docker-compose run --rm \
-	site1.local \
-	composer update
+	$(RUN_COMMAND) composer update
 
 test:
-	docker-compose exec \
-	site1.local \
-	/application/bin/phpunit -c /application/phpunit.xml.dist --stop-on-failure $(PHPUNIT_FLAGS)
+	$(RUN_COMMAND) /application/bin/phpunit -c /application/phpunit.xml.dist --stop-on-failure $(PHPUNIT_FLAGS)
+
+coveralls:
+	$(RUN_COMMAND) php /application/bin/php-coveralls -v
+
 
 run-script:
 	docker exec -it \
