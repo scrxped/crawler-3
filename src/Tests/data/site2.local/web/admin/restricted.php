@@ -12,4 +12,4 @@ if ($_SESSION['user'] === null) {
 <h1>This is restricted area</h1>
 
 <a href="/admin/">Home</a><br>
-<!--<a href="/admin/users.php">Users</a>-->
+<a href="logout.php">Logout</a><br>

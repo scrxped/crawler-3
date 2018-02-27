@@ -14,5 +14,4 @@ var_dump(session_id());
 
 <a href="restricted.php">Restricted area</a><br>
 
-<a href="logout.php">Logout</a><br>
 
