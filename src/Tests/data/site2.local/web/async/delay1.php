@@ -1,5 +1,5 @@
 <?php
 
-sleep(1);
+usleep(500000);
 
-echo "Output after 1 seconds delay";
+echo "Output 1";
