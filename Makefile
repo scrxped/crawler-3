@@ -32,7 +32,7 @@ test:
 	$(RUN_COMMAND) /application/bin/phpunit -c /application/phpunit.xml.dist --stop-on-failure $(PHPUNIT_FLAGS)
 
 coveralls:
-	$(RUN_COMMAND) php /application/bin/php-coveralls -v
+	docker-compose run --rm -e TRAVIS=$(TRAVIS) -e TRAVIS_JOB_ID=$(TRAVIS_JOB_ID) site1.local php /application/bin/php-coveralls -v
 
 
 run-script:
