@@ -11,6 +11,7 @@ use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
+use Zstate\Crawler\Policy\AggregateUriPolicy;
 use Zstate\Crawler\Subscriber\Authenticator;
 use Zstate\Crawler\Subscriber\ExtractAndQueueLinks;
 use Zstate\Crawler\Subscriber\RedirectScheduler;
@@ -201,7 +202,11 @@ class Client
         );
 
         $this->dispatcher->addSubscriber(
-            new ExtractAndQueueLinks(new LinkExtractor($this->getConfig()->filterOptions()), $this->getQueue())
+            new ExtractAndQueueLinks(
+                new LinkExtractor,
+                new AggregateUriPolicy($this->getConfig()->filterOptions()),
+                $this->getQueue()
+            )
         );
     }
 

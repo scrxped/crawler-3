@@ -34,6 +34,89 @@ class ClientTest extends TestCase
         $this->assertEquals($expected, $history->getHistory());
     }
 
+    public function testAllowUri()
+    {
+        $config = [
+            'start_uri' => 'http://site1.local/testallowuri/',
+            'concurrency' => 1,
+            'request_options' => [
+                'debug' => $this->debug,
+            ],
+            'filter' => [
+                'allow' => ['/testallowuri/page1','/testallowuri/page2']
+            ]
+        ];
+        $client = new Client($config);
+
+        $history = new HistoryMiddleware;
+        $client->addMiddleware($history);
+        $client->run();
+
+
+        $expected = [
+            'GET http://site1.local/testallowuri/',
+            'GET http://site1.local/testallowuri/page1.html',
+            'GET http://site1.local/testallowuri/page2.html',
+        ];
+
+        $this->assertEquals($expected, $history->getHistory());
+    }
+
+    public function testDenyUri()
+    {
+        $config = [
+            'start_uri' => 'http://site1.local/testallowuri/',
+            'concurrency' => 1,
+            'request_options' => [
+                'debug' => $this->debug,
+            ],
+            'filter' => [
+                'deny' => ['/testallowuri/page1','/testallowuri/page2']
+            ]
+        ];
+        $client = new Client($config);
+
+        $history = new HistoryMiddleware;
+        $client->addMiddleware($history);
+        $client->run();
+
+
+        $expected = [
+            'GET http://site1.local/testallowuri/',
+            'GET http://site1.local/testallowuri/page3.html',
+        ];
+
+        $this->assertEquals($expected, $history->getHistory());
+    }
+
+    public function testDenyAllowUri()
+    {
+        $config = [
+            'start_uri' => 'http://site1.local/testallowuri/',
+            'concurrency' => 1,
+            'request_options' => [
+                'debug' => $this->debug,
+            ],
+            'filter' => [
+                'allow' => ['/testallowuri/page1','/testallowuri/page2'],
+                'deny' => ['/testallowuri/page1']
+            ]
+        ];
+        $client = new Client($config);
+
+        $history = new HistoryMiddleware;
+        $client->addMiddleware($history);
+        $client->run();
+
+
+        $expected = [
+            'GET http://site1.local/testallowuri/',
+            'GET http://site1.local/testallowuri/page2.html',
+        ];
+
+        $this->assertEquals($expected, $history->getHistory());
+    }
+
     public function testAnchorsLinks()
     {
         $config = [

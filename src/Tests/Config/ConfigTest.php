@@ -28,7 +28,12 @@ class ConfigTest extends TestCase
                 'timeout' => 0,
                 'delay' => null
             ],
-
+            'filter' => [
+                'allow' => [],
+                'allow_domains' => [],
+                'deny_domains' => [],
+                'deny' => []
+            ]
         ];
 
         $this->assertEquals($expected,$config->toArray());
@@ -85,6 +90,12 @@ class ConfigTest extends TestCase
                 'timeout' => 0,
                 'delay' => null
 
+            ],
+            'filter' => [
+                'allow' => [],
+                'allow_domains' => [],
+                'deny_domains' => [],
+                'deny' => []
             ],
             'concurrency' => 10,
             'save_progress_in' => 'memory',

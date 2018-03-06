@@ -7,6 +7,7 @@ namespace Zstate\Crawler\Config;
 /**
  * Class FilterOptions
  * @package Zstate\Crawler\Config
+ * @internal
  */
 class FilterOptions
 {

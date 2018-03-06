@@ -67,22 +67,28 @@ class ConfigDefinition implements ConfigurationInterface
         $builder = new TreeBuilder();
         $node = $builder->root('filter');
 
-        $node->children()
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
             ->arrayNode('allow')
                 ->info('A list of regular expressions that the urls must match in order to be extracted. If not given (or empty), it will match all links. It has precedence over the deny parameter.')
                 ->scalarPrototype()->end()
+                ->defaultValue([])
             ->end()
             ->arrayNode('allow_domains')
                 ->info('A list of string containing domains which will be considered for extracting the links. It has precedence over the deny parameter.')
                 ->scalarPrototype()->end()
+                ->defaultValue([])
             ->end()
             ->arrayNode('deny_domains')
                 ->info('A list of strings containing domains which won’t be considered for extracting the links.')
                 ->scalarPrototype()->end()
+                ->defaultValue([])
             ->end()
             ->arrayNode('deny')
                 ->info('A list of regular expressions) that the urls must match in order to be excluded (ie. not extracted).')
                 ->scalarPrototype()->end()
+                ->defaultValue([])
             ->end()
         ->end();
 

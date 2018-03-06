@@ -39,16 +39,12 @@ class Config
 
     public function loginOptions(): ? LoginOptions
     {
-        $loginOptions = $this->config['login'];
-
-        return $loginOptions ? new LoginOptions($loginOptions) : null;
+        return isset($this->config['login']) ? new LoginOptions($this->config['login']) : null;
     }
 
     public function filterOptions(): ? FilterOptions
     {
-        $filterOptions = $this->config['filter'];
-
-        return $filterOptions ? new FilterOptions($filterOptions) : null;
+        return isset($this->config['filter']) ? new FilterOptions($this->config['filter']) : null;
     }
 
     public function requestOptions(): array

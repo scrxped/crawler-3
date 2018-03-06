@@ -8,7 +8,9 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Event\ResponseReceived;
+use Zstate\Crawler\Policy\UriPolicy;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Storage\QueueInterface;
 
@@ -22,11 +24,16 @@ class ExtractAndQueueLinks implements EventSubscriberInterface
      * @var QueueInterface
      */
     private $queue;
+    /**
+     * @var UriPolicy
+     */
+    private $policy;
 
-    public function __construct(LinkExtractorInterface $linkExtractor, QueueInterface $queue)
+    public function __construct(LinkExtractorInterface $linkExtractor, UriPolicy $policy, QueueInterface $queue)
     {
         $this->linkExtractor = $linkExtractor;
         $this->queue = $queue;
+        $this->policy = $policy;
     }
 
     public function responseReceived(ResponseReceived $event): void
@@ -41,6 +48,11 @@ class ExtractAndQueueLinks implements EventSubscriberInterface
 
 
             $visitUri = UriResolver::resolve($currentUri, new Uri($extractedLink));
+            $absoluteUri  =  new AbsoluteUri($visitUri);
+
+            if(! $this->policy->isUriAllowed($absoluteUri)) {
+                continue;
+            }
 
             $request = new Request('GET', $visitUri);
 

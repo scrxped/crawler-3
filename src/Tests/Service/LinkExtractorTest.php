@@ -11,10 +11,7 @@ class LinkExtractorTest extends TestCase
 {
     public function testLinkExtractorFromConfig()
     {
-        $extractor = new LinkExtractor(new FilterOptions([
-            'deny' => ['/logout'],
-            'allow_domains' => ['test.com']
-        ]));
+        $extractor = new LinkExtractor;
 
         $response = new Response(
             200,
@@ -28,65 +25,13 @@ class LinkExtractorTest extends TestCase
 
         $links = $extractor->extract($response);
 
-        $this->assertEquals(['/test', 'http://test.com/test2'], $links);
+        $this->assertEquals([
+            '/test',
+            'http://www.test.com/test1',
+            'http://test.com/test2',
+            'http://otherdomain.com/otherdomain',
+            '/logout'
+        ], $links);
     }
 
-    public function testAllowUri()
-    {
-        $extractor = new LinkExtractor(new FilterOptions([
-            'allow' => ['/test'],
-        ]));
-
-        $response = new Response(
-            200,
-            [],
-            '<a href="/test">test</a>'
-            . '<a href="http://www.test.com/test1">test</a>'
-            . '<a href="/logout">logout</a>'
-        );
-
-        $links = $extractor->extract($response);
-
-        $this->assertEquals(['/test', 'http://www.test.com/test1'], $links);
-    }
-
-    public function testIgnoreAnchors()
-    {
-        $extractor = new LinkExtractor(new FilterOptions([
-            'allow_domains' => ['test.com']
-        ]));
-
-        $response = new Response(
-            200,
-            [],
-            '<a href="/test">test</a>'
-            . '<a href="/test#someAnchor">test#someAnchor</a>'
-            . '<a href="#someAnchor">someAnchor</a>'
-            . '<a href="/logout">logout</a>'
-        );
-
-        $links = $extractor->extract($response);
-
-        $this->assertEquals(['/test', '/test#someAnchor', '/logout'], $links);
-    }
-
-
-    public function testDenyDomains()
-    {
-        $extractor = new LinkExtractor(new FilterOptions([
-            'deny_domains' => ['www.test.com']
-        ]));
-
-        $response = new Response(
-            200,
-            [],
-            '<a href="/test">test</a>'
-            . '<a href="http://www.test.com/test1">test</a>'
-            . '<a href="/logout">logout</a>'
-        );
-
-        $links = $extractor->extract($response);
-
-        $this->assertEquals(['/test', '/logout'], $links);
-    }
 }
