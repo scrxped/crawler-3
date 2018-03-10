@@ -244,10 +244,12 @@ class Client
             new BeforeEngineStarted($config)
         );
 
-        $scheduler = $this->getScheduler();
+        $queue = $this->getQueue();
 
-        $scheduler->queue(new Request('GET', $config->startUri()));
+        foreach ($config->startUris() as $uri) {
+            $queue->enqueue(new Request('GET', $uri));
+        }
 
-        $scheduler->run();
+        $this->getScheduler()->run();
     }
 }

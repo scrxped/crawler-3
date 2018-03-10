@@ -116,7 +116,7 @@ class MiddlewareWrapperTest extends TestCase
     private function getClient(Handler $handler): Client
     {
         $config = [
-            'start_uri' => 'http://site1.local/',
+            'start_uri' => ['http://site1.local/'],
             'concurrency' => 4
         ];
         $crawler = new Client($config);

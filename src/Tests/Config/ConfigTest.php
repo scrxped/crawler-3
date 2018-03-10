@@ -12,11 +12,11 @@ class ConfigTest extends TestCase
     public function testDefaults()
     {
         $config = Config::fromArray([
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
         ]);
 
         $expected = [
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'concurrency' => 10,
             'save_progress_in' => 'memory',
             'request_options' => [
@@ -44,7 +44,7 @@ class ConfigTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
 
         $config = Config::fromArray([
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' => []
         ]);
     }
@@ -54,7 +54,7 @@ class ConfigTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
 
         $config = Config::fromArray([
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' => [
                 'login_uri' => 'http://test.com'
             ]
@@ -64,7 +64,7 @@ class ConfigTest extends TestCase
     public function testLoginConfig()
     {
         $config = Config::fromArray([
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' => [
                 'login_uri' => 'http://test.com',
                 'form_params' => ['username' => 'test', 'password' => 'password']
@@ -72,7 +72,7 @@ class ConfigTest extends TestCase
         ]);
 
         $expected = [
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' =>  [
                 'login_uri' => 'http://test.com',
                 'form_params' => [
@@ -108,7 +108,7 @@ class ConfigTest extends TestCase
     public function testFullConfig()
     {
         $config = Config::fromArray([
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' => [
                 'login_uri' => 'http://test.com',
                 'form_params' => ['username' => 'test', 'password' => 'password']
@@ -131,7 +131,7 @@ class ConfigTest extends TestCase
         ]);
 
         $expected = [
-            'start_uri' => 'http://test.com',
+            'start_uri' => ['http://test.com'],
             'login' => [
                 'login_uri' => 'http://test.com',
                 'form_params' => [

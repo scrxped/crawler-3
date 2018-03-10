@@ -52,7 +52,7 @@ class Config
         return $this->config['request_options'];
     }
 
-    public function startUri(): string
+    public function startUris(): array
     {
         return $this->config['start_uri'];
     }
