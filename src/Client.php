@@ -131,7 +131,7 @@ class Client
 
     private function setHandlerStack(): void
     {
-        $stack = HandlerStack::create($this->getHandler());
+        $stack = new HandlerStack($this->getHandler());
 
         $this->handlerStack = $stack;
     }
@@ -230,13 +230,20 @@ class Client
         $this->getHandlerStack()->push($middlewareCallable, get_class($middleware));
     }
 
-    public function withLog(Middleware $middleware): void
+    private function setupDefaultMiddlewares(): void
     {
-        $this->getHandlerStack()->unshift(new MiddlewareWrapper($middleware), get_class($middleware));
+        $stack = $this->getHandlerStack();
+
+        $stack->push(\GuzzleHttp\Middleware::prepareBody(), 'prepare_body');
+        $stack->push(\GuzzleHttp\Middleware::cookies(), 'cookies');
+        $stack->push(\GuzzleHttp\Middleware::redirect(), 'allow_redirects');
+        $stack->push(\GuzzleHttp\Middleware::httpErrors(), 'http_errors');
     }
 
     public function run(): void
     {
+        $this->setupDefaultMiddlewares();
+
         $config = $this->getConfig();
 
         $this->getDispatcher()->dispatch(

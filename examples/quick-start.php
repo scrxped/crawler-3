@@ -20,7 +20,7 @@ $config = [
 
 $client = new Client($config);
 
-$client->withLog(
+$client->addMiddleware(
     new class extends BaseMiddleware {
         public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
         {

@@ -14,7 +14,7 @@ $config = [
 
 $client = new Client($config);
 
-$client->withLog(
+$client->addMiddleware(
     new class extends BaseMiddleware {
         public function processFailure(RequestInterface $request, \Exception $reason): \Exception
         {

@@ -175,7 +175,6 @@ class ClientTest extends TestCase
 
         $history = new HistoryMiddleware;
         $client->addMiddleware($history);
-        $client->withLog(new LogMiddleware);
 
         $client->run();
 
@@ -237,7 +236,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
+        $client->addMiddleware($log);
 
         $client->run();
 
@@ -263,8 +262,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->addMiddleware(new HistoryMiddleware);
-        $client->withLog($log);
+        $client->addMiddleware($log);
 
         $client->run();
 
@@ -281,7 +279,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
+        $client->addMiddleware($log);
 
         $client->run();
 
@@ -307,7 +305,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
+        $client->addMiddleware($log);
 
         $client->run();
 
@@ -324,9 +322,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
-        $client->addMiddleware(new HistoryMiddleware);
-
+        $client->addMiddleware($log);
         $client->addMiddleware(new MiddlewareWithExceptionInProcessRequest);
 
 
@@ -345,9 +341,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
-        $client->addMiddleware(new HistoryMiddleware);
-
+        $client->addMiddleware($log);
         $client->addMiddleware(new MiddlewareWithExceptionInProcessResponse);
 
 
@@ -366,9 +360,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
-        $client->addMiddleware(new HistoryMiddleware);
-
+        $client->addMiddleware($log);
         $client->addMiddleware(new MiddlewareWithExceptionInProcessFailure);
         $client->addMiddleware(new MiddlewareWithExceptionInProcessResponse);
 
@@ -416,7 +408,7 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->withLog($log);
+        $client->addMiddleware($log);
 
         $client->run();
 
