@@ -220,42 +220,6 @@ class ClientTest extends TestCase
         $this->assertEquals($expected, $history->getHistory());
     }
 
-    public function testSite2AuthMiddleware()
-    {
-        $config = [
-            'start_uri' => ['http://site2.local/admin/'],
-            'login' => [
-                'login_uri' => 'http://site2.local/admin/login.php',
-                'form_params' => ['username' => 'test', 'password' => 'password']
-            ],
-            'request_options' => [
-                'debug' => $this->debug,
-            ]
-        ];
-        $client = new Client($config);
-
-        $log = new LogMiddleware;
-
-        $client->addMiddleware($log);
-
-        $client->run();
-
-        // Getting more results due to redirects
-        $expected = [
-            0 => 'Process Request: POST http://site2.local/admin/login.php username=test&password=password',
-            1 => 'Process Response: http://site2.local/admin/login.php status:302',
-            2 => 'Process Request: GET http://site2.local/admin/',
-            3 => 'Process Response: http://site2.local/admin/ status:200',
-            4 => 'Process Request: GET http://site2.local/admin/restricted.php',
-            5 => 'Process Response: http://site2.local/admin/restricted.php status:200',
-            6 => 'Process Request: GET http://site2.local/admin/logout.php',
-            7 => 'Process Response: http://site2.local/admin/logout.php status:302',
-        ];
-
-
-        $this->assertEquals($expected, $log->getLog());
-    }
-
     public function test500ServerError()
     {
         $client = $this->getClient('http://site1.local/500-error.php');

@@ -13,7 +13,7 @@ class ConfigDefinition implements ConfigurationInterface
     /**
      * Generates the configuration tree builder.
      *
-     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder The tree builder
+     * @return TreeBuilder The tree builder
      */
     public function getConfigTreeBuilder()
     {
@@ -37,35 +37,11 @@ class ConfigDefinition implements ConfigurationInterface
             ->scalarNode('save_progress_in')
                 ->defaultValue('memory')
             ->end()
-            ->append($this->loginOptions())
             ->append($this->filterOptions())
             ->append($this->requestOptions())
         ->end();
 
         return $treeBuilder;
-    }
-
-    private function loginOptions(): NodeDefinition
-    {
-        $builder = new TreeBuilder();
-        $node = $builder->root('login');
-
-        $node->children()
-            ->scalarNode('login_uri')
-                ->isRequired()
-                ->cannotBeEmpty()
-            ->end()
-            ->arrayNode('form_params')
-                ->isRequired()
-                ->cannotBeEmpty()
-                ->scalarPrototype()->end()
-            ->end()
-            ->booleanNode('relogin')
-                ->defaultFalse()
-            ->end()
-        ->end();
-
-        return $node;
     }
 
     private function filterOptions(): NodeDefinition

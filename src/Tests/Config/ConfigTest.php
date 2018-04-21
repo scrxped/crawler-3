@@ -61,58 +61,10 @@ class ConfigTest extends TestCase
         ]);
     }
 
-    public function testLoginConfig()
-    {
-        $config = Config::fromArray([
-            'start_uri' => ['http://test.com'],
-            'login' => [
-                'login_uri' => 'http://test.com',
-                'form_params' => ['username' => 'test', 'password' => 'password']
-            ]
-        ]);
-
-        $expected = [
-            'start_uri' => ['http://test.com'],
-            'login' =>  [
-                'login_uri' => 'http://test.com',
-                'form_params' => [
-                    'username' => 'test',
-                    'password' => 'password',
-                ],
-                'relogin' => false,
-            ],
-            'request_options' => [
-                'verify' => true,
-                'cookies' => true,
-                'allow_redirects' => false,
-                'debug' => false,
-                'connect_timeout' => 0,
-                'timeout' => 0,
-                'delay' => null
-
-            ],
-            'filter' => [
-                'allow' => [],
-                'allow_domains' => [],
-                'deny_domains' => [],
-                'deny' => []
-            ],
-            'concurrency' => 10,
-            'save_progress_in' => 'memory',
-        ];
-
-
-        $this->assertEquals($expected,$config->toArray());
-    }
-
     public function testFullConfig()
     {
         $config = Config::fromArray([
             'start_uri' => ['http://test.com'],
-            'login' => [
-                'login_uri' => 'http://test.com',
-                'form_params' => ['username' => 'test', 'password' => 'password']
-            ],
             'filter' => [
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],
@@ -132,14 +84,6 @@ class ConfigTest extends TestCase
 
         $expected = [
             'start_uri' => ['http://test.com'],
-            'login' => [
-                'login_uri' => 'http://test.com',
-                'form_params' => [
-                    'username' => 'test',
-                    'password' => 'password',
-                ],
-                'relogin' => false,
-            ],
             'filter' => [
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],

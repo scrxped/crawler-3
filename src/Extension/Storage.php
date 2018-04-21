@@ -1,14 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Zstate\Crawler\Subscriber;
+namespace Zstate\Crawler\Extension;
 
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Service\StorageService;
 
-class Storage implements EventSubscriberInterface
+class Storage extends Extension
 {
     /**
      * @var StorageService

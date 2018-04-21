@@ -9,15 +9,16 @@ use GuzzleHttp\Psr7\Request;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Event\BeforeEngineStarted;
+use Zstate\Crawler\Extension\Authenticator;
+use Zstate\Crawler\Extension\Extension;
+use Zstate\Crawler\Extension\ExtractAndQueueLinks;
+use Zstate\Crawler\Extension\RedirectScheduler;
+use Zstate\Crawler\Extension\Storage;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
-use Zstate\Crawler\Policy\AggregateUriPolicy;
-use Zstate\Crawler\Subscriber\Authenticator;
-use Zstate\Crawler\Subscriber\ExtractAndQueueLinks;
-use Zstate\Crawler\Subscriber\RedirectScheduler;
-use Zstate\Crawler\Subscriber\Storage;
 use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
+use Zstate\Crawler\Policy\AggregateUriPolicy;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
@@ -51,6 +52,7 @@ class Client
     private $dispatcher;
     private $history;
     private $handler;
+    private $extentions = [];
 
     public function __construct(array $config)
     {
@@ -61,6 +63,7 @@ class Client
         $this->setHandlerStack();
         $this->setHttpClient();
         $this->setEventDispatcher();
+        $this->initializeDefaultExtentions();
         $this->setScheduler();
     }
 
@@ -177,37 +180,37 @@ class Client
         return $this->scheduler;
     }
 
-
-    private function setEventDispatcher(): void
+    public function addExtension(Extension $extension)
     {
-        $this->dispatcher = new EventDispatcher;
-        $config = $this->getConfig();
+        $extension->initialize($this->getConfig(), $this->getHttpClient());
 
+        $this->getDispatcher()->addSubscriber($extension);
 
-        if(null !== $config->loginOptions()) {
-            $this->dispatcher->addSubscriber(
-                new Authenticator(
-                    $this->getHttpClient(),
-                    $config->loginOptions()
-                )
-            );
-        }
+        $this->extentions[] = $extension;
+    }
 
-        $this->dispatcher->addSubscriber(
+    private function initializeDefaultExtentions(): void
+    {
+        $this->addExtension(
             new Storage(new StorageService($this->getStorageAdapter()))
         );
 
-        $this->dispatcher->addSubscriber(
+        $this->addExtension(
             new RedirectScheduler($this->getQueue())
         );
 
-        $this->dispatcher->addSubscriber(
+        $this->addExtension(
             new ExtractAndQueueLinks(
                 new LinkExtractor,
                 new AggregateUriPolicy($this->getConfig()->filterOptions()),
                 $this->getQueue()
             )
         );
+    }
+
+    private function setEventDispatcher(): void
+    {
+        $this->dispatcher = new EventDispatcher;
     }
 
     /**

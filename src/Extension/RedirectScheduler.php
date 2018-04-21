@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Zstate\Crawler\Subscriber;
+namespace Zstate\Crawler\Extension;
 
 
 use GuzzleHttp\Psr7\Request;
@@ -9,12 +9,11 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
 use Zstate\Crawler\Storage\QueueInterface;
 
-class RedirectScheduler implements EventSubscriberInterface
+class RedirectScheduler extends Extension
 {
     /**
      * @var QueueInterface

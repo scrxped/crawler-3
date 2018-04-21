@@ -1,20 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace Zstate\Crawler\Subscriber;
+namespace Zstate\Crawler\Extension;
 
 
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Policy\UriPolicy;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Storage\QueueInterface;
 
-class ExtractAndQueueLinks implements EventSubscriberInterface
+class ExtractAndQueueLinks  extends Extension
 {
     /**
      * @var LinkExtractorInterface
