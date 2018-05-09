@@ -2,4 +2,4 @@
 
 usleep(1000000);
 
-echo "Output 2";
+echo "Slept for 1 second";
