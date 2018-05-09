@@ -7,6 +7,9 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Zstate\Crawler\Event\AfterEngineStopped;
+use Zstate\Crawler\Event\AfterRequestSent;
+use Zstate\Crawler\Event\BeforeRequestSent;
 use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\HistoryInterface;
@@ -65,6 +68,11 @@ class Scheduler
         $this->history = $history;
         $this->queue = $queue;
         $this->eventDispatcher = $eventDispatcher;
+    }
+
+    public function __destruct()
+    {
+        $this->eventDispatcher->dispatch(AfterEngineStopped::class, new AfterEngineStopped);
     }
 
     public function run(): void
@@ -130,8 +138,12 @@ class Scheduler
             return false;
         }
 
+        $this->eventDispatcher->dispatch(BeforeRequestSent::class, new BeforeRequestSent($request));
+
         $idx = RequestFingerprint::calculate($request);
         $promise = $this->client->sendAsync($request);
+
+        $this->eventDispatcher->dispatch(AfterRequestSent::class, new AfterRequestSent($request));
 
         $this->pending[$idx] = $promise->then(
             function (ResponseInterface $response) use ($idx, $request): ResponseInterface {

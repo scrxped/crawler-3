@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Middleware;
 
+use Exception;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Uri;
@@ -37,7 +38,7 @@ class MiddlewareWrapper
 
                 /** @var PromiseInterface $promise */
                 $promise = $delegate($request, $options);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return \GuzzleHttp\Promise\rejection_for($e);
             }
 
@@ -48,7 +49,7 @@ class MiddlewareWrapper
 
                     return $response;
                 },
-                function (\Exception $e) use ($request): PromiseInterface {
+                function (Exception $e) use ($request): PromiseInterface {
                     //Just like try/catch, you can choose to propagate or not by returning an Exception or throwing an Exception.
                     $reason = $this->middleware->processFailure($request, $e);
 

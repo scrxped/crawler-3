@@ -204,6 +204,44 @@ class ClientTest extends TestCase
         $this->assertEquals($expected, $history->getHistory());
     }
 
+
+    public function testAutoThrottle()
+    {
+        $config = [
+            'start_uri' => ['http://site2.local/async/delay3.php', 'http://site2.local/async/delay2.php'],
+            'concurrency' => 1,
+            'auto_throttle' => ['enabled' => true]
+        ];
+
+        $client = new Client($config);
+
+        $startTime = microtime(true);
+        $client->run();
+        $endTime = microtime(true);
+
+        $totalTimeInSeconds = ($endTime - $startTime);
+
+        $this->assertGreaterThan(5, $totalTimeInSeconds);
+    }
+
+    public function testAutoThrottleIgnore404()
+    {
+        $config = [
+            'start_uri' => ['http://site2.local/async/delay3.php', 'http://site1.local/404-error.php', 'http://site2.local/async/delay2.php'],
+            'concurrency' => 1,
+        ];
+
+        $client = new Client($config);
+
+        $startTime = microtime(true);
+        $client->run();
+        $endTime = microtime(true);
+
+        $totalTimeInSeconds = ($endTime - $startTime);
+
+        $this->assertGreaterThan(6.5, $totalTimeInSeconds);
+    }
+
     public function testSamePageRequest()
     {
         $client = $this->getClient('http://site1.local/same-page-request.php');

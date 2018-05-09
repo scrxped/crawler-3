@@ -37,11 +37,6 @@ class Config
         return isset($this->config[$name]);
     }
 
-    public function loginOptions(): ? LoginOptions
-    {
-        return isset($this->config['login']) ? new LoginOptions($this->config['login']) : null;
-    }
-
     public function filterOptions(): ? FilterOptions
     {
         return isset($this->config['filter']) ? new FilterOptions($this->config['filter']) : null;
@@ -65,6 +60,11 @@ class Config
     public function saveProgressIn(): string
     {
         return $this->config['save_progress_in'];
+    }
+
+    public function getAutoThrottleOptions(): AutoThrottleOptions
+    {
+        return new AutoThrottleOptions($this->config['auto_throttle']);
     }
 
     public function toArray()

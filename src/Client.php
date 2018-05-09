@@ -5,11 +5,15 @@ use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Promise\Promise;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\TransferStats;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Event\BeforeEngineStarted;
-use Zstate\Crawler\Extension\Authenticator;
+use Zstate\Crawler\Event\TransferStatisticReceived;
+use Zstate\Crawler\Extension\AutoThrottle;
 use Zstate\Crawler\Extension\Extension;
 use Zstate\Crawler\Extension\ExtractAndQueueLinks;
 use Zstate\Crawler\Extension\RedirectScheduler;
@@ -53,21 +57,24 @@ class Client
     private $history;
     private $handler;
     private $extentions = [];
+    private $transferStats;
+    private $session;
 
     public function __construct(array $config)
     {
-        $this->setConfig($config);
-        $this->setStorageAdapter();
-        $this->setQueue();
-        $this->setHistory();
-        $this->setHandlerStack();
-        $this->setHttpClient();
-        $this->setEventDispatcher();
+        $this->initializeConfig($config);
+        $this->initializeStorageAdapter();
+        $this->initializeQueue();
+        $this->initializeHistory();
+        $this->initializeEventDispatcher();
+        $this->initializeHandlerStack();
+        $this->initializeHttpClient();
+        $this->initializeSession();
         $this->initializeDefaultExtentions();
-        $this->setScheduler();
+        $this->initializeScheduler();
     }
 
-    private function setConfig(array $config)
+    private function initializeConfig(array $config)
     {
         $this->config = Config::fromArray($config);
     }
@@ -80,7 +87,7 @@ class Client
         return $this->config;
     }
 
-    private function setStorageAdapter(): void
+    private function initializeStorageAdapter(): void
     {
         $config = $this->getConfig();
         $dsn = $config->saveProgressIn();
@@ -93,7 +100,7 @@ class Client
         return $this->storageAdapter;
     }
 
-    private function setQueue(): void
+    private function initializeQueue(): void
     {
         $this->queue = new Queue($this->getStorageAdapter());
     }
@@ -103,7 +110,7 @@ class Client
         return $this->queue;
     }
 
-    private function setHistory(): void
+    private function initializeHistory(): void
     {
         $this->history = new History($this->getStorageAdapter());
     }
@@ -132,7 +139,7 @@ class Client
         return $this->handler;
     }
 
-    private function setHandlerStack(): void
+    private function initializeHandlerStack(): void
     {
         $stack = new HandlerStack($this->getHandler());
 
@@ -144,11 +151,15 @@ class Client
         return $this->handlerStack;
     }
 
-    private function setHttpClient(): void
+    private function initializeHttpClient(): void
     {
         $config = $this->getConfig()->requestOptions();
 
         $config['handler'] = $this->getHandlerStack();
+
+        $config['on_stats'] = function (TransferStats $stats) {
+            $this->getDispatcher()->dispatch(TransferStatisticReceived::class, new TransferStatisticReceived($stats));
+        };
 
         $this->httpClient = new GuzzleHttpClient($config);
     }
@@ -161,7 +172,7 @@ class Client
         return $this->httpClient;
     }
 
-    private function setScheduler(): void
+    private function initializeScheduler(): void
     {
         $this->scheduler = new Scheduler(
             $this->getHttpClient(),
@@ -180,9 +191,29 @@ class Client
         return $this->scheduler;
     }
 
+    private function promiseTransferStats(): PromiseInterface
+    {
+        return $this->transferStats;
+    }
+
+    private function initializeTransferStatsPromise()
+    {
+        $this->transferStats = new Promise;
+    }
+
+    private function initializeSession()
+    {
+        $this->session = new Session($this->getHttpClient());
+    }
+
+    private function getSession(): Session
+    {
+        return $this->session;
+    }
+
     public function addExtension(Extension $extension)
     {
-        $extension->initialize($this->getConfig(), $this->getHttpClient());
+        $extension->initialize($this->getConfig(), $this->getSession());
 
         $this->getDispatcher()->addSubscriber($extension);
 
@@ -191,13 +222,11 @@ class Client
 
     private function initializeDefaultExtentions(): void
     {
-        $this->addExtension(
-            new Storage(new StorageService($this->getStorageAdapter()))
-        );
+        $this->addExtension(new AutoThrottle);
 
-        $this->addExtension(
-            new RedirectScheduler($this->getQueue())
-        );
+        $this->addExtension(new Storage(new StorageService($this->getStorageAdapter())));
+
+        $this->addExtension(new RedirectScheduler($this->getQueue()));
 
         $this->addExtension(
             new ExtractAndQueueLinks(
@@ -208,7 +237,7 @@ class Client
         );
     }
 
-    private function setEventDispatcher(): void
+    private function initializeEventDispatcher(): void
     {
         $this->dispatcher = new EventDispatcher;
     }
@@ -251,7 +280,7 @@ class Client
 
         $this->getDispatcher()->dispatch(
             BeforeEngineStarted::class,
-            new BeforeEngineStarted($config)
+            new BeforeEngineStarted
         );
 
         $queue = $this->getQueue();

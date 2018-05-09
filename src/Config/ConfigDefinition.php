@@ -37,11 +37,37 @@ class ConfigDefinition implements ConfigurationInterface
             ->scalarNode('save_progress_in')
                 ->defaultValue('memory')
             ->end()
+            ->append($this->autoThrottle())
             ->append($this->filterOptions())
             ->append($this->requestOptions())
         ->end();
 
         return $treeBuilder;
+    }
+
+    private function autoThrottle(): NodeDefinition
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root('auto_throttle');
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->children()
+            ->booleanNode('enabled')
+                ->info('Enable auto throttle extension.')
+                ->defaultTrue()
+            ->end()
+            ->integerNode('min_delay')
+                ->info('Sets minimum delay between the requests.')
+                ->defaultValue(0)
+            ->end()
+            ->integerNode('max_delay')
+                ->info('Sets maximun delay between the requests.')
+                ->defaultValue(60)
+            ->end()
+        ;
+
+        return $node;
     }
 
     private function filterOptions(): NodeDefinition
@@ -113,6 +139,7 @@ class ConfigDefinition implements ConfigurationInterface
                     ->info('The number of milliseconds to delay before sending the request.')
                     ->defaultNull()
                 ->end()
+
             ->end()
         ->end();
 

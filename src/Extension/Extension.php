@@ -8,20 +8,18 @@ namespace Zstate\Crawler\Extension;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Config\Config;
+use Zstate\Crawler\Session;
 
 abstract class Extension implements EventSubscriberInterface
 {
-    /**
-     * @var Config
-     */
     private $config;
 
-    private $httpClient;
+    private $session;
 
-    public function initialize(Config $config, ClientInterface $client)
+    public function initialize(Config $config, Session $session)
     {
         $this->config = $config;
-        $this->httpClient = $client;
+        $this->session = $session;
     }
 
     /**
@@ -32,8 +30,8 @@ abstract class Extension implements EventSubscriberInterface
         return $this->config;
     }
 
-    public function getHttpClient(): ClientInterface
+    public function getSession(): Session
     {
-        return $this->httpClient;
+        return $this->session;
     }
 }

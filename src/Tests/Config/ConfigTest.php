@@ -33,6 +33,11 @@ class ConfigTest extends TestCase
                 'allow_domains' => [],
                 'deny_domains' => [],
                 'deny' => []
+            ],
+            'auto_throttle' => [
+                'enabled' => true,
+                'min_delay' => 0,
+                'max_delay' => 60
             ]
         ];
 
@@ -79,6 +84,11 @@ class ConfigTest extends TestCase
                 'connect_timeout' => 0,
                 'timeout' => 0,
                 'delay' => 0
+            ],
+            'auto_throttle' => [
+                'enabled' => true,
+                'min_delay' => 0,
+                'max_delay' => 60
             ]
         ]);
 
@@ -98,6 +108,11 @@ class ConfigTest extends TestCase
                 'connect_timeout' => 0,
                 'timeout' => 0,
                 'delay' => 0
+            ],
+            'auto_throttle' => [
+                'enabled' => true,
+                'min_delay' => 0,
+                'max_delay' => 60
             ],
             'concurrency' => 10,
             'save_progress_in' => 'memory',
