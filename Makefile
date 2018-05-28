@@ -29,7 +29,7 @@ composer-update:
 	$(RUN_COMMAND) composer update
 
 test:
-	$(RUN_COMMAND) /application/bin/phpunit -c /application/phpunit.xml.dist --stop-on-failure $(PHPUNIT_FLAGS)
+	$(RUN_COMMAND) /application/bin/phpunit -c /application/phpunit.xml.dist $(PHPUNIT_FLAGS)
 
 coveralls:
 	docker-compose run --rm -e TRAVIS=$(TRAVIS) -e TRAVIS_JOB_ID=$(TRAVIS_JOB_ID) site1.local php /application/bin/php-coveralls -v

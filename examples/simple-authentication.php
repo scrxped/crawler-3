@@ -7,6 +7,7 @@ use Zstate\Crawler\Client;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Extension\Extension;
 use Zstate\Crawler\Middleware\BaseMiddleware;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -58,7 +59,7 @@ $client->addExtension(new class($loginUri, $username, $password) extends Extensi
             $body
         );
 
-        $this->getHttpClient()->send($request);
+        $this->getSession()->getHttpClient()->send($request);
     }
 
     /**
@@ -72,16 +73,8 @@ $client->addExtension(new class($loginUri, $username, $password) extends Extensi
     }
 });
 
-$client->addMiddleware(new class extends BaseMiddleware {
-
-    public function processRequest(RequestInterface $request, array $options): RequestInterface
-    {
-        printf("Process Request: %s; %s \n", $request->getUri(), $request->getBody());
-
-        return $request;
-    }
-
-    public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+$client->addResponseMiddleware(new class implements ResponseMiddleware {
+    public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
     {
         printf("Process Response: %s %s \n", $request->getUri(), $response->getStatusCode());
 

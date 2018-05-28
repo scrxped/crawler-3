@@ -4,9 +4,6 @@ namespace Zstate\Crawler;
 use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\TransferStats;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -20,8 +17,13 @@ use Zstate\Crawler\Extension\RedirectScheduler;
 use Zstate\Crawler\Extension\Storage;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
+use Zstate\Crawler\Handler\HandlerStack;
 use Zstate\Crawler\Middleware\Middleware;
+use Zstate\Crawler\Middleware\MiddlewareStack;
 use Zstate\Crawler\Middleware\MiddlewareWrapper;
+use Zstate\Crawler\Middleware\RequestMiddleware;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
+use Zstate\Crawler\Middleware\RobotsTxtMiddleware;
 use Zstate\Crawler\Policy\AggregateUriPolicy;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;
@@ -57,8 +59,8 @@ class Client
     private $history;
     private $handler;
     private $extentions = [];
-    private $transferStats;
     private $session;
+    private $middlewareStack;
 
     public function __construct(array $config)
     {
@@ -71,6 +73,7 @@ class Client
         $this->initializeHttpClient();
         $this->initializeSession();
         $this->initializeDefaultExtentions();
+        $this->initializeMiddlewareStack();
         $this->initializeScheduler();
     }
 
@@ -179,6 +182,7 @@ class Client
             $this->getDispatcher(),
             $this->getHistory(),
             $this->getQueue(),
+            $this->getMiddlewareStack(),
             $this->getConfig()->concurrency()
         );
     }
@@ -189,16 +193,6 @@ class Client
     private function getScheduler(): Scheduler
     {
         return $this->scheduler;
-    }
-
-    private function promiseTransferStats(): PromiseInterface
-    {
-        return $this->transferStats;
-    }
-
-    private function initializeTransferStatsPromise()
-    {
-        $this->transferStats = new Promise;
     }
 
     private function initializeSession()
@@ -228,14 +222,7 @@ class Client
 
         $this->addExtension(new RedirectScheduler($this->getQueue()));
 
-        $this->addExtension(
-            new ExtractAndQueueLinks(
-                new LinkExtractor,
-                new AggregateUriPolicy($this->getConfig()->filterOptions()),
-                $this->getQueue()
-            )
-        );
-    }
+        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, new AggregateUriPolicy($this->getConfig()->filterOptions()), $this->getQueue()));   }
 
     private function initializeEventDispatcher(): void
     {
@@ -251,37 +238,48 @@ class Client
     }
 
     /**
-     * Push a middleware to the top of the stack
+     * Adds a request middleware to the stack
      *
-     * @param Middleware $middleware
+     * @param RequestMiddleware $middleware
      */
-    public function addMiddleware(Middleware $middleware): void
+    public function addRequestMiddleware(RequestMiddleware $middleware): void
     {
-        $middlewareCallable = new MiddlewareWrapper($middleware);
-
-        $this->getHandlerStack()->push($middlewareCallable, get_class($middleware));
+        $this->getMiddlewareStack()->addRequestMiddleware($middleware);
     }
 
-    private function setupDefaultMiddlewares(): void
+    /**
+     * Adds a response middleware to the stack
+     *
+     * @param ResponseMiddleware $middleware
+     */
+    public function addResponseMiddleware(ResponseMiddleware $middleware): void
     {
-        $stack = $this->getHandlerStack();
+        $this->getMiddlewareStack()->addResponseMiddleware($middleware);
+    }
 
-        $stack->push(\GuzzleHttp\Middleware::prepareBody(), 'prepare_body');
-        $stack->push(\GuzzleHttp\Middleware::cookies(), 'cookies');
-        $stack->push(\GuzzleHttp\Middleware::redirect(), 'allow_redirects');
-        $stack->push(\GuzzleHttp\Middleware::httpErrors(), 'http_errors');
+    private function initializeMiddlewareStack(): void
+    {
+        $this->middlewareStack = new MiddlewareStack;
+
+        // Adding robots.txt middleware if enabled.
+        $filterOptions = $this->getConfig()->filterOptions();
+        if($filterOptions->obeyRobotsTxt()) {
+            $this->addRequestMiddleware(new RobotsTxtMiddleware);
+        }
+    }
+
+    private function getMiddlewareStack(): MiddlewareStack
+    {
+        return $this->middlewareStack;
     }
 
     public function run(): void
     {
-        $this->setupDefaultMiddlewares();
-
         $config = $this->getConfig();
 
-        $this->getDispatcher()->dispatch(
-            BeforeEngineStarted::class,
-            new BeforeEngineStarted
-        );
+        //echo $this->getHandlerStack()->__toString() . "\n";
+
+        $this->getDispatcher()->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted);
 
         $queue = $this->getQueue();
 

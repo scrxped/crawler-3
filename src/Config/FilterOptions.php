@@ -41,6 +41,11 @@ class FilterOptions
         return $this->get('deny');
     }
 
+    public function obeyRobotsTxt(): bool
+    {
+        return $this->options['robotstxt_obey'];
+    }
+
     private function get(string $name): array
     {
         return $this->options[$name] ?? [];

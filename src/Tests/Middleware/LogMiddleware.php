@@ -6,42 +6,17 @@ use Exception;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Middleware\Middleware;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
 
-class LogMiddleware implements Middleware
+class LogMiddleware implements ResponseMiddleware
 {
     private $log = [];
 
-    public function processRequest(RequestInterface $request, array $options): RequestInterface
-    {
-        $stream = $request->getBody();
-
-        $requestBody = trim((string) $stream);
-
-        $stream->rewind();
-
-        if(! empty($requestBody)) {
-            $requestBody = " $requestBody";
-        }
-
-        $this->log[] = "Process Request: {$request->getMethod()} " . (string)$request->getUri() . $requestBody;
-
-        return $request;
-    }
-
-    public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+    public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
     {
         $this->log[] = "Process Response: " . (string)$request->getUri() . " status:" . $response->getStatusCode();
 
         return $response;
-    }
-
-    public function processFailure(RequestInterface $request, Exception $reason): Exception
-    {
-        $reasonMessage = $reason->getMessage();
-
-        $this->log[] = "Process Failure: " . $reasonMessage;
-
-        return $reason;
     }
 
     /**

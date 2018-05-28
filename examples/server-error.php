@@ -4,6 +4,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -14,21 +15,15 @@ $config = [
 
 $client = new Client($config);
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processFailure(RequestInterface $request, \Exception $reason): \Exception
+$client->addResponseMiddleware(
+    new class implements ResponseMiddleware {
+        public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
         {
-            printf("Process Failure: %s %s \n", $request->getUri(), $reason->getMessage());
+            printf("Process Failure: %s %s \n", $request->getUri(), $response->getStatusCode());
 
-            return $reason;
+            return $response;
         }
     }
 );
 
 $client->run();
-
-/*
-Output:
-Process Failure: https://httpbin.org/status/500 Server error: `GET https://httpbin.org/status/500` resulted in a `500 INTERNAL SERVER ERROR` response
-Process Failure: https://httpbin.org/status/404 Client error: `GET https://httpbin.org/status/404` resulted in a `404 NOT FOUND` response
-*/

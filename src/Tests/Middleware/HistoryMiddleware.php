@@ -5,12 +5,13 @@ namespace Zstate\Crawler\Tests\Middleware;
 use Exception;
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Middleware\BaseMiddleware;
+use Zstate\Crawler\Middleware\RequestMiddleware;
 
-class HistoryMiddleware extends BaseMiddleware
+class HistoryMiddleware implements RequestMiddleware
 {
     private $history = [];
 
-    public function processRequest(RequestInterface $request, array $options): RequestInterface
+    public function processRequest(RequestInterface $request): RequestInterface
     {
         $stream = $request->getBody();
 
@@ -22,7 +23,7 @@ class HistoryMiddleware extends BaseMiddleware
 
         $this->history[] = $history;
 
-        return parent::processRequest($request, $options);
+        return $request;
     }
 
     public function getHistory(): array
@@ -33,6 +34,8 @@ class HistoryMiddleware extends BaseMiddleware
     public function processFailure(RequestInterface $request, Exception $reason): Exception
     {
         $reasonMessage = $reason->getMessage();
+
+        echo "\n" . (string) $request->getUri() . " " .$reasonMessage . "\n";
 
         return $reason;
     }

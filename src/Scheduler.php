@@ -2,7 +2,9 @@
 
 namespace Zstate\Crawler;
 
+use Exception;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -10,7 +12,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Zstate\Crawler\Event\AfterEngineStopped;
 use Zstate\Crawler\Event\AfterRequestSent;
 use Zstate\Crawler\Event\BeforeRequestSent;
+use Zstate\Crawler\Event\RequestFailed;
 use Zstate\Crawler\Event\ResponseReceived;
+use Zstate\Crawler\Exception\InvalidRequestException;
+use Zstate\Crawler\Middleware\MiddlewareStack;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\HistoryInterface;
 use Zstate\Crawler\Storage\QueueInterface;
@@ -42,6 +47,10 @@ class Scheduler
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
+    /**
+     * @var MiddlewareStack
+     */
+    private $middlewareStack;
 
     /**
      * Configuration hash can include the following key value pairs:
@@ -61,6 +70,7 @@ class Scheduler
         EventDispatcherInterface $eventDispatcher,
         HistoryInterface $history,
         QueueInterface $queue,
+        MiddlewareStack $middlewareStack,
         int $concurrency)
     {
         $this->concurrency = $concurrency;
@@ -68,6 +78,7 @@ class Scheduler
         $this->history = $history;
         $this->queue = $queue;
         $this->eventDispatcher = $eventDispatcher;
+        $this->middlewareStack = $middlewareStack;
     }
 
     public function __destruct()
@@ -141,24 +152,51 @@ class Scheduler
         $this->eventDispatcher->dispatch(BeforeRequestSent::class, new BeforeRequestSent($request));
 
         $idx = RequestFingerprint::calculate($request);
-        $promise = $this->client->sendAsync($request);
 
-        $this->eventDispatcher->dispatch(AfterRequestSent::class, new AfterRequestSent($request));
+        try {
+            // Run request through the request middleware stack
+            $request = $this->middlewareStack->getRequestMiddlewareStack()($request);
 
-        $this->pending[$idx] = $promise->then(
-            function (ResponseInterface $response) use ($idx, $request): ResponseInterface {
+            $promise = $this->client->sendAsync($request);
 
-                $this->eventDispatcher->dispatch(ResponseReceived::class, new ResponseReceived($response, $request));
-                $this->step($idx);
+            $this->eventDispatcher->dispatch(AfterRequestSent::class, new AfterRequestSent($request));
 
-                return $response;
-            }
-        );
+            $this->pending[$idx] = $promise->then(
+                function (ResponseInterface $response) use ($idx, $request): ResponseInterface {
 
-        // Add request to the history
-        $this->history->add($request);
+                    // Run response through the response middleware stack
+                    $response = $this->middlewareStack->getResponseMiddlewareStack()($response, $request);
 
-        return true;
+                    $this->eventDispatcher->dispatch(ResponseReceived::class, new ResponseReceived($response, $request));
+
+                    $this->step($idx);
+
+                    return $response;
+                }
+            )->otherwise(
+                function (Exception $reason) use ($idx, $request) {
+
+                    // If the request resulted in response with status code greater than 400, then get response and run it through the middleware stack
+                    if($reason instanceof RequestException) {
+                        // Run response through the response middleware stack
+                        $response = $this->middlewareStack->getResponseMiddlewareStack()($reason->getResponse(), $request);
+                    }
+
+                    $this->eventDispatcher->dispatch(RequestFailed::class, new RequestFailed($reason, $request));
+                    $this->step($idx);
+                }
+            );
+
+            // Add request to the history
+            $this->history->add($request);
+
+            return true;
+
+        } catch (InvalidRequestException $e) {
+            $this->eventDispatcher->dispatch(RequestFailed::class, new RequestFailed($e, $request));
+            // Skipping the request if it is invalid (For example, if the request is not allowed by robots.txt rule)
+            return false;
+        }
     }
 
     private function step($idx): void

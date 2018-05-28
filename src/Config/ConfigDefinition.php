@@ -78,6 +78,10 @@ class ConfigDefinition implements ConfigurationInterface
         $node
             ->addDefaultsIfNotSet()
             ->children()
+            ->booleanNode('robotstxt_obey')
+                ->info('If enabled, crawler will respect robots.txt policies.')
+                ->defaultValue(false)
+            ->end()
             ->arrayNode('allow')
                 ->info('A list of regular expressions that the urls must match in order to be extracted. If not given (or empty), it will match all links. It has precedence over the deny parameter.')
                 ->scalarPrototype()->end()

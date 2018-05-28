@@ -2,8 +2,9 @@
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Middleware\RequestMiddleware;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -13,29 +14,19 @@ $config = [
 
 $client = new Client($config);
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processRequest(RequestInterface $request, array $options): RequestInterface
+$client->addRequestMiddleware(
+    new class implements RequestMiddleware {
+        public function processRequest(RequestInterface $request): RequestInterface
         {
             printf("Middleware 1 Request: %s \n", $request->getUri());
             return $request;
         }
-        public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
-        {
-            printf("Middleware 1 Response: %s %s \n", $request->getUri(), $response->getStatusCode());
-            return $response;
-        }
     }
 );
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processRequest(RequestInterface $request, array $options): RequestInterface
-        {
-            printf("Middleware 2 Request: %s \n", $request->getUri());
-            return $request;
-        }
-        public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+$client->addResponseMiddleware(
+    new class implements ResponseMiddleware {
+        public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
         {
             printf("Middleware 2 Response: %s %s \n", $request->getUri(), $response->getStatusCode());
             return $response;
@@ -48,7 +39,5 @@ $client->run();
 /*
 Output:
 Middleware 1 Request: https://httpbin.org/ip
-Middleware 2 Request: https://httpbin.org/ip
 Middleware 2 Response: https://httpbin.org/ip 200
-Middleware 1 Response: https://httpbin.org/ip 200
 */

@@ -15,6 +15,7 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Middleware\ResponseMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -31,9 +32,9 @@ $config = [
 
 $client = new Client($config);
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+$client->addResponseMiddleware(
+    new class implements ResponseMiddleware {
+        public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
         {
             printf("Process Response: %s %s \n", $request->getUri(), $response->getStatusCode());
 
@@ -43,14 +44,6 @@ $client->addMiddleware(
 );
 
 $client->run();
-
-/* 
-Output:
-Process Response: https://httpbin.org/ 200 
-Process Response: https://httpbin.org/ip 200 
-Process Response: https://httpbin.org/get 200 
-Process Response: https://httpbin.org/anything 200
-*/
 ```
 
 ## Middlewares
@@ -62,35 +55,26 @@ then add it to a client:
 
 ```php
 ...
+
 $config = [
     'start_uri' => ['https://httpbin.org/ip']
 ];
 
 $client = new Client($config);
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processRequest(RequestInterface $request, array $options): RequestInterface
+$client->addRequestMiddleware(
+    new class implements RequestMiddleware {
+        public function processRequest(RequestInterface $request): RequestInterface
         {
             printf("Middleware 1 Request: %s \n", $request->getUri());
             return $request;
         }
-        public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
-        {
-            printf("Middleware 1 Response: %s %s \n", $request->getUri(), $response->getStatusCode());
-            return $response;
-        }
     }
 );
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processRequest(RequestInterface $request, array $options): RequestInterface
-        {
-            printf("Middleware 2 Request: %s \n", $request->getUri());
-            return $request;
-        }
-        public function processResponse(RequestInterface $request, ResponseInterface $response): ResponseInterface
+$client->addResponseMiddleware(
+    new class implements ResponseMiddleware {
+        public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
         {
             printf("Middleware 2 Response: %s %s \n", $request->getUri(), $response->getStatusCode());
             return $response;
@@ -101,12 +85,11 @@ $client->addMiddleware(
 $client->run();
 
 /*
-Output: 
-Middleware 1 Request: https://httpbin.org/ip 
-Middleware 2 Request: https://httpbin.org/ip 
-Middleware 2 Response: https://httpbin.org/ip 200 
-Middleware 1 Response: https://httpbin.org/ip 200
+Output:
+Middleware 1 Request: https://httpbin.org/ip
+Middleware 2 Response: https://httpbin.org/ip 200
 */
+
 ```
 
 ## Processing server errors
@@ -122,24 +105,18 @@ $config = [
 
 $client = new Client($config);
 
-$client->addMiddleware(
-    new class extends BaseMiddleware {
-        public function processFailure(RequestInterface $request, \Exception $reason): \Exception
+$client->addResponseMiddleware(
+    new class implements ResponseMiddleware {
+        public function processResponse(ResponseInterface $response, RequestInterface $request): ResponseInterface
         {
-            printf("Process Failure: %s %s \n", $request->getUri(), $reason->getMessage());
+            printf("Process Failure: %s %s \n", $request->getUri(), $response->getStatusCode());
 
-            return $reason;
+            return $response;
         }
     }
 );
 
 $client->run();
-
-/*
-Output: 
-Process Failure: https://httpbin.org/status/500 Server error: `GET https://httpbin.org/status/500` resulted in a `500 INTERNAL SERVER ERROR` response 
-Process Failure: https://httpbin.org/status/404 Client error: `GET https://httpbin.org/status/404` resulted in a `404 NOT FOUND` response 
-*/
 ```
 
 

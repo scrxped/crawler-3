@@ -19,7 +19,7 @@ class ClientTest extends TestCase
         $client = $this->getClient('http://site1.local/');
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
         $client->run();
 
 
@@ -49,7 +49,7 @@ class ClientTest extends TestCase
         $client = new Client($config);
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
         $client->run();
 
 
@@ -77,7 +77,7 @@ class ClientTest extends TestCase
         $client = new Client($config);
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
         $client->run();
 
 
@@ -105,7 +105,7 @@ class ClientTest extends TestCase
         $client = new Client($config);
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
         $client->run();
 
 
@@ -130,7 +130,7 @@ class ClientTest extends TestCase
         $client = new Client($config);
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
 
         $client->run();
 
@@ -156,7 +156,7 @@ class ClientTest extends TestCase
         $client = new Client($config);
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
 
         $client->run();
 
@@ -174,7 +174,7 @@ class ClientTest extends TestCase
         $client = $this->getClient('http://site1.local/products/great-product.html');
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
 
         $client->run();
 
@@ -191,7 +191,7 @@ class ClientTest extends TestCase
         $client = $this->getClient('http://site2.local/async/');
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
 
         $client->run();
 
@@ -247,7 +247,7 @@ class ClientTest extends TestCase
         $client = $this->getClient('http://site1.local/same-page-request.php');
 
         $history = new HistoryMiddleware;
-        $client->addMiddleware($history);
+        $client->addRequestMiddleware($history);
 
         $client->run();
 
@@ -264,13 +264,12 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->addMiddleware($log);
+        $client->addResponseMiddleware($log);
 
         $client->run();
 
         $expected = [
-            'Process Request: GET http://site1.local/500-error.php',
-            'Process Failure: Server error: `GET http://site1.local/500-error.php` resulted in a `500 Internal Server Error` response',
+            'Process Response: http://site1.local/500-error.php status:500',
         ];
         $this->assertEquals($expected, $log->getLog());
     }
@@ -281,21 +280,16 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->addMiddleware($log);
+        $client->addResponseMiddleware($log);
 
         $client->run();
 
         $expected = [
-            0 => 'Process Request: GET http://site1.local/never-stop-crawling.html',
-            1 => 'Process Response: http://site1.local/never-stop-crawling.html status:200',
-            2 => 'Process Request: GET http://site1.local/page-with-link-to-500-error.html',
-            3 => 'Process Response: http://site1.local/page-with-link-to-500-error.html status:200',
-            4 => 'Process Request: GET http://site1.local/404-error.php',
-            5 => 'Process Failure: Client error: `GET http://site1.local/404-error.php` resulted in a `404 Not Found` response',
-            6 => 'Process Request: GET http://site1.local/customers.html',
-            7 => 'Process Response: http://site1.local/customers.html status:200',
-            8 => 'Process Request: GET http://site1.local/500-error.php',
-            9 => 'Process Failure: Server error: `GET http://site1.local/500-error.php` resulted in a `500 Internal Server Error` response',
+            'Process Response: http://site1.local/never-stop-crawling.html status:200',
+            'Process Response: http://site1.local/page-with-link-to-500-error.html status:200',
+            'Process Response: http://site1.local/404-error.php status:404',
+            'Process Response: http://site1.local/customers.html status:200',
+            'Process Response: http://site1.local/500-error.php status:500',
         ];
 
         $this->assertEquals($expected, $log->getLog());
@@ -307,71 +301,12 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->addMiddleware($log);
+        $client->addResponseMiddleware($log);
 
         $client->run();
 
         $expected = [
-            'Process Request: GET http://site1.local/404-error.php',
-            'Process Failure: Client error: `GET http://site1.local/404-error.php` resulted in a `404 Not Found` response',
-        ];
-        $this->assertEquals($expected, $log->getLog());
-    }
-
-    public function testProcessRequestFailure()
-    {
-        $client = $this->getClient('http://site2.local/service.html');
-
-        $log = new LogMiddleware;
-
-        $client->addMiddleware($log);
-        $client->addMiddleware(new MiddlewareWithExceptionInProcessRequest);
-
-
-        $client->run();
-
-        $expected = [
-            'Process Request: GET http://site2.local/service.html',
-            'Process Failure: Exception in MiddlewareWithExceptionInProcessRequest::processRequest',
-        ];
-        $this->assertEquals($expected, $log->getLog());
-    }
-
-    public function testProcessResponseFailure()
-    {
-        $client = $this->getClient('http://site1.local/customers.html');
-
-        $log = new LogMiddleware;
-
-        $client->addMiddleware($log);
-        $client->addMiddleware(new MiddlewareWithExceptionInProcessResponse);
-
-
-        $client->run();
-
-        $expected = [
-            'Process Request: GET http://site1.local/customers.html',
-            'Process Failure: Exception in MiddlewareWithExceptionInProcessResponse::processResponse',
-        ];
-        $this->assertEquals($expected, $log->getLog());
-    }
-
-    public function testProcessFailureException()
-    {
-        $client = $this->getClient('http://site2.local/service.html');
-
-        $log = new LogMiddleware;
-
-        $client->addMiddleware($log);
-        $client->addMiddleware(new MiddlewareWithExceptionInProcessFailure);
-        $client->addMiddleware(new MiddlewareWithExceptionInProcessResponse);
-
-
-        $client->run();
-
-        $expected = [
-            'Process Request: GET http://site2.local/service.html',
-            'Process Failure: Exception in MiddlewareWithExceptionInProcessFailure::processFailure',
+            'Process Response: http://site1.local/404-error.php status:404',
         ];
         $this->assertEquals($expected, $log->getLog());
     }
@@ -410,20 +345,18 @@ class ClientTest extends TestCase
 
         $log = new LogMiddleware;
 
-        $client->addMiddleware($log);
+        $client->addResponseMiddleware($log);
 
         $client->run();
 
         $expected = [
-            0 => 'Process Request: GET http://site1.local/redirect/',
-            1 => 'Process Response: http://site1.local/redirect/ status:302',
-            2 => 'Process Request: GET http://site1.local/redirect/index1.php',
-            3 => 'Process Response: http://site1.local/redirect/index1.php status:302',
-            4 => 'Process Request: GET http://site1.local/redirect/other.html',
-            5 => 'Process Response: http://site1.local/redirect/other.html status:200',
-            6 => 'Process Request: GET http://site1.local/redirect/other.html?test=1',
-            7 => 'Process Response: http://site1.local/redirect/other.html?test=1 status:200',
+            'Process Response: http://site1.local/redirect/ status:302',
+            'Process Response: http://site1.local/redirect/index1.php status:302',
+            'Process Response: http://site1.local/redirect/other.html status:200',
+            'Process Response: http://site1.local/redirect/other.html?test=1 status:200',
         ];
         $this->assertEquals($expected, $log->getLog());
     }
+
+
 }

@@ -29,6 +29,7 @@ class ConfigTest extends TestCase
                 'delay' => null
             ],
             'filter' => [
+                'robotstxt_obey' => false,
                 'allow' => [],
                 'allow_domains' => [],
                 'deny_domains' => [],
@@ -71,6 +72,7 @@ class ConfigTest extends TestCase
         $config = Config::fromArray([
             'start_uri' => ['http://test.com'],
             'filter' => [
+                'robotstxt_obey' => false,
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],
                 'deny_domains' => ['test2.com','test3.com'],
@@ -95,6 +97,7 @@ class ConfigTest extends TestCase
         $expected = [
             'start_uri' => ['http://test.com'],
             'filter' => [
+                'robotstxt_obey' => false,
                 'allow' => ['test','test1'],
                 'allow_domains' => ['test.com','test1.com'],
                 'deny_domains' => ['test2.com','test3.com'],

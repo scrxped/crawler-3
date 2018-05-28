@@ -48,14 +48,13 @@ class MiddlewareWrapper
                     $response = $this->middleware->processResponse($request, $response);
 
                     return $response;
-                },
-                function (Exception $e) use ($request): PromiseInterface {
-                    //Just like try/catch, you can choose to propagate or not by returning an Exception or throwing an Exception.
-                    $reason = $this->middleware->processFailure($request, $e);
-
-                    return \GuzzleHttp\Promise\rejection_for($reason);
                 }
-            );
+            )->otherwise(function (Exception $e) use ($request): PromiseInterface {
+                //Just like try/catch, you can choose to propagate or not by returning an Exception or throwing an Exception.
+                $reason = $this->middleware->processFailure($request, $e);
+
+                return \GuzzleHttp\Promise\rejection_for($reason);
+            });
         };
     }
 }

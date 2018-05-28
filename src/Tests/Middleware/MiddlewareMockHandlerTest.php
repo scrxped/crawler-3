@@ -8,7 +8,7 @@ use Zstate\Crawler\Client;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Handler\MockHandler;
 
-class MiddlewareWrapperTest extends TestCase
+class MiddlewareMockHandlerTest extends TestCase
 {
     public function testMiddleware()
     {
@@ -22,7 +22,7 @@ class MiddlewareWrapperTest extends TestCase
         $crawler = $this->getClient($handler);
 
         $history = new HistoryMiddleware;
-        $crawler->addMiddleware($history);
+        $crawler->addRequestMiddleware($history);
 
         $crawler->run();
 
@@ -44,7 +44,7 @@ class MiddlewareWrapperTest extends TestCase
         $crawler = $this->getClient($handler);
 
         $history = new HistoryMiddleware;
-        $crawler->addMiddleware($history);
+        $crawler->addRequestMiddleware($history);
 
         $crawler->run();
 
@@ -61,47 +61,7 @@ class MiddlewareWrapperTest extends TestCase
 
         $crawler = $this->getClient($handler);
         $history = new HistoryMiddleware;
-        $crawler->addMiddleware($history);
-        $crawler->run();
-
-        $this->assertEquals([
-            'GET http://site1.local/',
-        ], $history->getHistory());
-    }
-
-    public function testExceptionInProcessRequest()
-    {
-        $handler = new MockHandler([
-            new Response(200, [], '<a href="/test.html">test</a>'),
-            new Response(200, [], '<a href="/test1.html">test1</a>'),
-        ]);
-
-        $crawler = $this->getClient($handler);
-        $history = new HistoryMiddleware;
-        $crawler->addMiddleware($history);
-
-        $crawler->addMiddleware(new MiddlewareWithExceptionInProcessRequest);
-
-        $crawler->run();
-
-        $this->assertEquals([
-            'GET http://site1.local/',
-        ], $history->getHistory());
-    }
-
-    public function testExceptionInProcessResponse()
-    {
-        $handler = new MockHandler([
-            new Response(200, [], '<a href="/test.html">test</a>'),
-            new Response(200, [], '<a href="/test1.html">test1</a>'),
-        ]);
-
-        $crawler = $this->getClient($handler);
-        $history = new HistoryMiddleware;
-        $crawler->addMiddleware($history);
-
-        $crawler->addMiddleware(new MiddlewareWithExceptionInProcessResponse);
-
+        $crawler->addRequestMiddleware($history);
         $crawler->run();
 
         $this->assertEquals([
