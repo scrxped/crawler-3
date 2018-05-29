@@ -23,7 +23,6 @@ class HandlerStack
         $handlerStack->push(Middleware::prepareBody(), 'prepare_body');
         $handlerStack->push(Middleware::cookies(), 'cookies');
         $handlerStack->push(Middleware::redirect(), 'allow_redirects');
-        $handlerStack->push(Middleware::httpErrors(), 'http_errors');
 
         $this->handlerStack = $handlerStack;
     }

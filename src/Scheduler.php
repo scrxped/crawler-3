@@ -175,13 +175,6 @@ class Scheduler
                 }
             )->otherwise(
                 function (Exception $reason) use ($idx, $request) {
-
-                    // If the request resulted in response with status code greater than 400, then get response and run it through the middleware stack
-                    if($reason instanceof RequestException) {
-                        // Run response through the response middleware stack
-                        $response = $this->middlewareStack->getResponseMiddlewareStack()($reason->getResponse(), $request);
-                    }
-
                     $this->eventDispatcher->dispatch(RequestFailed::class, new RequestFailed($reason, $request));
                     $this->step($idx);
                 }
