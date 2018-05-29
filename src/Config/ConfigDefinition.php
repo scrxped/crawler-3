@@ -133,15 +133,35 @@ class ConfigDefinition implements ConfigurationInterface
                 ->end()
                 ->floatNode('connect_timeout')
                     ->info('Float describing the number of seconds to wait while trying to connect to a server. Use 0 to wait indefinitely (the default behavior).')
-                    ->defaultValue(0)
                 ->end()
                 ->floatNode('timeout')
                     ->info('Float describing the timeout of the request in seconds. Use 0 to wait indefinitely (the default behavior).')
-                    ->defaultValue(0)
                 ->end()
                 ->floatNode('delay')
                     ->info('The number of milliseconds to delay before sending the request.')
-                    ->defaultNull()
+                ->end()
+                ->booleanNode('decode_content')
+                    ->info('Specify whether or not Content-Encoding responses (gzip, deflate, etc.) are automatically decoded.')
+                ->end()
+                ->scalarNode('force_ip_resolve')
+                    ->info('Set to "v4" if you want the HTTP handlers to use only ipv4 protocol or "v6" for ipv6 protocol.')
+                ->end()
+                // Example: 'proxy' => [
+                //    'http'  => 'tcp://localhost:8125', // Use this proxy with "http"
+                //    'https' => 'tcp://localhost:9124', // Use this proxy with "https",
+                //    'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
+                // ]
+                ->arrayNode('proxy')
+                    ->info('Pass an array to specify different proxies for different protocols.')
+                ->end()
+                ->floatNode('read_timeout')
+                    ->info('Float describing the timeout to use when reading a streamed body. Defaults to the value of the default_socket_timeout PHP ini setting')
+                ->end()
+                ->booleanNode('stream')
+                    ->info('Set to true to stream a response rather than download it all up-front.')
+                ->end()
+                ->scalarNode('version')
+                    ->info('Protocol version to use with the request.')
                 ->end()
 
             ->end()

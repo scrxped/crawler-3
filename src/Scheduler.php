@@ -25,7 +25,9 @@ class Scheduler
 
     private $pending = [];
 
-    /** @var callable|int */
+    /**
+     * @var int
+     */
     private $concurrency;
 
     /**

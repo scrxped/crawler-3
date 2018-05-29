@@ -24,9 +24,6 @@ class ConfigTest extends TestCase
                 'cookies' => true,
                 'allow_redirects' => false,
                 'debug' => false,
-                'connect_timeout' => 0,
-                'timeout' => 0,
-                'delay' => null
             ],
             'filter' => [
                 'robotstxt_obey' => false,
@@ -85,7 +82,11 @@ class ConfigTest extends TestCase
                 'debug' => true,
                 'connect_timeout' => 0,
                 'timeout' => 0,
-                'delay' => 0
+                'decode_content' => true,
+                'force_ip_resolve' => null,
+                'proxy' => [],
+                'stream' => false,
+                'version' => '1.1'
             ],
             'auto_throttle' => [
                 'enabled' => true,
@@ -110,7 +111,11 @@ class ConfigTest extends TestCase
                 'debug' => true,
                 'connect_timeout' => 0,
                 'timeout' => 0,
-                'delay' => 0
+                'decode_content' => true,
+                'force_ip_resolve' => null,
+                'proxy' => [],
+                'stream' => false,
+                'version' => '1.1'
             ],
             'auto_throttle' => [
                 'enabled' => true,

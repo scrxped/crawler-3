@@ -6,9 +6,11 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\TransferStats;
+use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Event\BeforeEngineStarted;
+use Zstate\Crawler\Event\ResponseHeadersReceived;
 use Zstate\Crawler\Event\TransferStatisticReceived;
 use Zstate\Crawler\Extension\AutoThrottle;
 use Zstate\Crawler\Extension\Extension;
@@ -18,9 +20,7 @@ use Zstate\Crawler\Extension\Storage;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Handler\HandlerStack;
-use Zstate\Crawler\Middleware\Middleware;
 use Zstate\Crawler\Middleware\MiddlewareStack;
-use Zstate\Crawler\Middleware\MiddlewareWrapper;
 use Zstate\Crawler\Middleware\RequestMiddleware;
 use Zstate\Crawler\Middleware\ResponseMiddleware;
 use Zstate\Crawler\Middleware\RobotsTxtMiddleware;
@@ -164,6 +164,10 @@ class Client
             $this->getDispatcher()->dispatch(TransferStatisticReceived::class, new TransferStatisticReceived($stats));
         };
 
+        $config['on_headers'] = function (ResponseInterface $response) {
+            $this->getDispatcher()->dispatch(ResponseHeadersReceived::class, new ResponseHeadersReceived($response));
+        };
+
         $this->httpClient = new GuzzleHttpClient($config);
     }
 
@@ -276,8 +280,6 @@ class Client
     public function run(): void
     {
         $config = $this->getConfig();
-
-        //echo $this->getHandlerStack()->__toString() . "\n";
 
         $this->getDispatcher()->dispatch(BeforeEngineStarted::class, new BeforeEngineStarted);
 
