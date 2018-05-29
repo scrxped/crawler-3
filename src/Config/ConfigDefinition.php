@@ -151,8 +151,16 @@ class ConfigDefinition implements ConfigurationInterface
                 //    'https' => 'tcp://localhost:9124', // Use this proxy with "https",
                 //    'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
                 // ]
-                ->arrayNode('proxy')
+                ->variableNode('proxy')
                     ->info('Pass an array to specify different proxies for different protocols.')
+                ->end()
+                // ['cert' => ['/path/server.pem', 'password']]
+                ->variableNode('cert')
+                    ->info('Set to an array to specify the path to a file containing a PEM formatted client side certificate and password.')
+                ->end()
+                // ['ssl_key' => ['/path', 'password']]
+                ->variableNode('ssl_key')
+                    ->info('Specify the path to a file containing a private SSL key in PEM format.')
                 ->end()
                 ->floatNode('read_timeout')
                     ->info('Float describing the timeout to use when reading a streamed body. Defaults to the value of the default_socket_timeout PHP ini setting')

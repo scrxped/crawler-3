@@ -84,9 +84,15 @@ class ConfigTest extends TestCase
                 'timeout' => 0,
                 'decode_content' => true,
                 'force_ip_resolve' => null,
-                'proxy' => [],
+                'proxy' => [
+                    'http'  => 'tcp://localhost:8125', // Use this proxy with "http"
+                    'https' => 'tcp://localhost:9124', // Use this proxy with "https",
+                    'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
+                 ],
                 'stream' => false,
-                'version' => '1.1'
+                'version' => '1.1',
+                'cert' => '/path/server.pem',
+                'ssl_key' => ['/path/key.pem', 'password']
             ],
             'auto_throttle' => [
                 'enabled' => true,
@@ -113,9 +119,15 @@ class ConfigTest extends TestCase
                 'timeout' => 0,
                 'decode_content' => true,
                 'force_ip_resolve' => null,
-                'proxy' => [],
+                'proxy' => [
+                    'http'  => 'tcp://localhost:8125', // Use this proxy with "http"
+                    'https' => 'tcp://localhost:9124', // Use this proxy with "https",
+                    'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
+                ],
                 'stream' => false,
-                'version' => '1.1'
+                'version' => '1.1',
+                'cert' => '/path/server.pem',
+                'ssl_key' => ['/path/key.pem', 'password']
             ],
             'auto_throttle' => [
                 'enabled' => true,
