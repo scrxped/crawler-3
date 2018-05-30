@@ -49,7 +49,7 @@ $client->run();
 ## Middlewares
 
 Middleware can be written to perform a variety of tasks including authentication, filtering, headers, logging, etc.
-To create middleware simply implement `Zstate\Crawler\Middleware\Middleware` or extend `Zstate\Crawler\Middleware\BaseMiddleware` and
+To create middleware simply implement `Zstate\Crawler\Middleware\RequestMiddleware` or `Zstate\Crawler\Middleware\ResponseMiddleware` and
 then add it to a client:
 
 

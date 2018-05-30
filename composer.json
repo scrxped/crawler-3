@@ -1,6 +1,6 @@
 {
     "name":         "zstate/crawler",
-    "description":  "Crawler",
+    "description":  "Crawler is a fast asynchronous internet bot aiming to provide open source web search and testing solution for local websites. It can be used for a wide range of purposes, from extracting and indexing structured data to monitoring and automated testing.",
 
     "require": {
         "php": ">=7.1",
@@ -10,7 +10,8 @@
         "symfony/dom-crawler": "^4.0",
         "psr/log": "^1.0",
         "symfony/event-dispatcher": "^4.0",
-        "webignition/robots-txt-file": "^2.1"
+        "webignition/robots-txt-file": "^2.1",
+        "symfony/yaml": "^4.0"
     },
 
     "require-dev": {
@@ -22,7 +23,9 @@
         "files": ["src/functions.php"],
         "psr-4": {"Zstate\\Crawler\\": "src/"}
     },
-
+    "bin": [
+        "crawl"
+    ],
     "config": {
         "bin-dir": "bin"
     }
