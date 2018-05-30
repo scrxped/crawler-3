@@ -94,7 +94,7 @@ Middleware 2 Response: https://httpbin.org/ip 200
 
 ## Processing server errors
 
-To handle 4xx or 5xx responses create middleware and implement desired behavior in `processFailure` method.
+You can use middlewares to handle 4xx or 5xx responses.
 
 ```php
 ...
