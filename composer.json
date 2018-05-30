@@ -24,7 +24,7 @@
         "psr-4": {"Zstate\\Crawler\\": "src/"}
     },
     "bin": [
-        "crawl"
+        "crawler"
     ],
     "config": {
         "bin-dir": "bin"
