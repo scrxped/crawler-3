@@ -5,14 +5,30 @@ declare(strict_types=1);
 namespace Zstate\Crawler\Console\Command;
 
 
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Zstate\Crawler\Console\FileSystem;
 
 class InitCommand extends Command
 {
+    /**
+     * @var FileSystem
+     */
+    private $filesystem;
+
+    public function __construct(? FileSystem $filesystem = null)
+    {
+        parent::__construct();
+
+        if(! $filesystem) {
+            $filesystem = new FileSystem;
+        }
+
+        $this->filesystem = $filesystem;
+    }
+
     protected function configure()
     {
         $this->setName('init')
@@ -22,18 +38,16 @@ class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $path = realpath('./crawler.yml');
+        $path = './crawler.yml';
 
-        if(! is_writable(dirname($path))) {
-            throw new RuntimeException('The current directory must be writable.');
-        }
+        $this->filesystem->filePutContents($path, $this->getYmlTemplate());
 
-        file_put_contents($path, $this->getYmlTemplate());
+        $path = realpath($path);
 
         $output->writeln("<info>Created config file: " . $path . "</info>");
     }
 
-    private function getYmlTemplate(): string
+    public function getYmlTemplate(): string
     {
         $yml = <<<YML
 start_uri:

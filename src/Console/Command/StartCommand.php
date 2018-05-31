@@ -6,7 +6,6 @@ namespace Zstate\Crawler\Console\Command;
 
 
 use Psr\Log\LogLevel;
-use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -14,10 +13,27 @@ use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Yaml\Yaml;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Console\FileSystem;
 use Zstate\Crawler\Extension\ConsoleLogging;
 
-class CrawlCommand extends Command
+class StartCommand extends Command
 {
+    /**
+     * @var null|FileSystem
+     */
+    private $filesystem;
+
+    public function __construct(? FileSystem $filesystem = null)
+    {
+        parent::__construct();
+
+        if(! $filesystem) {
+            $filesystem = new FileSystem;
+        }
+
+        $this->filesystem = $filesystem;
+    }
+
     protected function configure()
     {
         $this->setName('start')
@@ -54,13 +70,7 @@ class CrawlCommand extends Command
 
     private function getConfigFromFile(string $path): array
     {
-        $configPath = realpath($path);
-
-        if(! is_readable($configPath)) {
-            throw new RuntimeException("The config file doesn't exist or is not readable");
-        }
-
-        return Yaml::parse(file_get_contents($configPath));
+        return Yaml::parse($this->filesystem->fileGetContent($path));
     }
 
     private function getClient(string $configPath): Client

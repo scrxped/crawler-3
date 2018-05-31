@@ -2,7 +2,7 @@
 <?php
 
 use Symfony\Component\Console\Application;
-use Zstate\Crawler\Console\Command\CrawlCommand;
+use Zstate\Crawler\Console\Command\StartCommand;
 use Zstate\Crawler\Console\Command\InitCommand;
 
 foreach (array(__DIR__.'/../../autoload.php', __DIR__.'/vendor/autoload.php') as $file) {
@@ -26,6 +26,6 @@ require COMPOSER_INSTALL;
 $application = new Application;
 
 $application->add(new InitCommand);
-$application->add(new CrawlCommand);
+$application->add(new StartCommand);
 
 $application->run();
