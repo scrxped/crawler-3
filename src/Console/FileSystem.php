@@ -16,6 +16,10 @@ use RuntimeException;
  */
 class FileSystem
 {
+    /**
+     * @param string $path
+     * @return string
+     */
     public function fileGetContent(string $path): string
     {
         if (false === $content = @file_get_contents($path)) {
@@ -25,6 +29,10 @@ class FileSystem
         return $content;
     }
 
+    /**
+     * @param string $path
+     * @param string $content
+     */
     public function filePutContents(string $path, string $content): void
     {
         if (false === @file_put_contents($path, $content)) {
