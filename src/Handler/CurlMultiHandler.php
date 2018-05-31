@@ -6,6 +6,9 @@ use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 
+/**
+ * @package Zstate\Crawler\Handler
+ */
 class CurlMultiHandler implements Handler
 {
     /**

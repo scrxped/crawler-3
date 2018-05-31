@@ -11,6 +11,9 @@ use Psr\Log\LoggerInterface;
 use Zstate\Crawler\Event\RequestFailed;
 use Zstate\Crawler\Event\ResponseReceived;
 
+/**
+ * @package Zstate\Crawler\Extension
+ */
 class ConsoleLogging extends Extension
 {
     /**
@@ -18,11 +21,17 @@ class ConsoleLogging extends Extension
      */
     private $logger;
 
+    /**
+     * @param LoggerInterface $logger
+     */
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
     }
 
+    /**
+     * @param ResponseReceived $event
+     */
     public function responseReceived(ResponseReceived $event): void
     {
         $request = $event->getRequest();
@@ -42,6 +51,9 @@ class ConsoleLogging extends Extension
         $this->logger->debug("Response Body: " . PHP_EOL . $response->getBody());
     }
 
+    /**
+     * @return string
+     */
     private function getHeadersFormatted(MessageInterface $message): string
     {
         $headers = [];
@@ -52,6 +64,9 @@ class ConsoleLogging extends Extension
         return join(PHP_EOL, $headers);
     }
 
+    /**
+     * @param RequestFailed $event
+     */
     public function requestFailed(RequestFailed $event): void
     {
         $request = $event->getRequest();
@@ -62,6 +77,9 @@ class ConsoleLogging extends Extension
         $this->logger->error($message);
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -70,6 +88,11 @@ class ConsoleLogging extends Extension
         ];
     }
 
+    /**
+     * @param RequestInterface $request
+     * @param int $statusCode
+     * @return string
+     */
     private function getMessageFormatted(RequestInterface $request, int $statusCode): string
     {
         $message = $request->getMethod() . " " . $request->getUri() . " " . $statusCode;

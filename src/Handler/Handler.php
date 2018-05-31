@@ -5,6 +5,9 @@ namespace Zstate\Crawler\Handler;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 
+/**
+ * @package Zstate\Crawler\Handler
+ */
 interface Handler
 {
     /**

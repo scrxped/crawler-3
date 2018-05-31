@@ -6,7 +6,6 @@ namespace Zstate\Crawler\Config;
 
 
 /**
- * Class AutoThrottleOptions
  * @package Zstate\Crawler\Config
  * @internal
  */
@@ -17,21 +16,34 @@ class AutoThrottleOptions
      */
     private $options;
 
+    /**
+     * AutoThrottleOptions constructor.
+     * @param array $options
+     */
     public function __construct(array $options)
     {
         $this->options = $options;
     }
 
+    /**
+     * @return bool
+     */
     public function isEnabled(): bool
     {
         return (bool) $this->options['enabled'];
     }
 
+    /**
+     * @return int
+     */
     public function getMinDelay(): int
     {
         return $this->options['min_delay'];
     }
 
+    /**
+     * @return int
+     */
     public function getMaxDelay(): int
     {
         return $this->options['max_delay'];

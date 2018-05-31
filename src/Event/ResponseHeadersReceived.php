@@ -8,6 +8,9 @@ namespace Zstate\Crawler\Event;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class ResponseHeadersReceived extends Event
 {
     /**
@@ -15,6 +18,9 @@ class ResponseHeadersReceived extends Event
      */
     private $response;
 
+    /**
+     * @param ResponseInterface $response
+     */
     public function __construct(ResponseInterface $response)
     {
         $this->response = $response;

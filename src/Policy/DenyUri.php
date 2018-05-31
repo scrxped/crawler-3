@@ -9,6 +9,9 @@ use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
 use function Zstate\Crawler\is_uri_matched_pattern;
 
+/**
+ * @package Zstate\Crawler\Policy
+ */
 class DenyUri implements UriPolicy
 {
     /**
@@ -21,6 +24,10 @@ class DenyUri implements UriPolicy
         $this->filterOptions = $filterOptions;
     }
 
+    /**
+     * @param AbsoluteUri $uri
+     * @return bool
+     */
     public function isUriAllowed(AbsoluteUri $uri): bool
     {
         $deniedUriPatterns = $this->filterOptions->deny();

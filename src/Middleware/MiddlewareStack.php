@@ -8,26 +8,50 @@ namespace Zstate\Crawler\Middleware;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @package Zstate\Crawler\Middleware
+ */
 class MiddlewareStack
 {
+    /**
+     * @var array
+     */
     private $requestMiddleware = [];
 
+    /**
+     * @var array
+     */
     private $responseMiddleware = [];
 
+    /**
+     * @var callable
+     */
     private $cachedRequestMiddlewareStack;
 
+    /**
+     * @var callable
+     */
     private $cachedResponseMiddlewareStack;
 
+    /**
+     * @param RequestMiddleware $requestMiddleware
+     */
     public function addRequestMiddleware(RequestMiddleware $requestMiddleware): void
     {
         $this->requestMiddleware[] = $requestMiddleware;
     }
 
+    /**
+     * @param ResponseMiddleware $responseMiddleware
+     */
     public function addResponseMiddleware(ResponseMiddleware $responseMiddleware): void
     {
         $this->responseMiddleware[] = $responseMiddleware;
     }
 
+    /**
+     * @return callable
+     */
     public function getRequestMiddlewareStack(): callable
     {
         if (! $this->cachedRequestMiddlewareStack) {
@@ -49,6 +73,9 @@ class MiddlewareStack
         return $this->cachedRequestMiddlewareStack;
     }
 
+    /**
+     * @return callable
+     */
     public function getResponseMiddlewareStack(): callable
     {
         if (! $this->cachedResponseMiddlewareStack) {

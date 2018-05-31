@@ -13,21 +13,31 @@ use Zstate\Crawler\Policy\UriPolicy;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Storage\QueueInterface;
 
+/**
+ * @package Zstate\Crawler\Extension
+ */
 class ExtractAndQueueLinks  extends Extension
 {
     /**
      * @var LinkExtractorInterface
      */
     private $linkExtractor;
+
     /**
      * @var QueueInterface
      */
     private $queue;
+
     /**
      * @var UriPolicy
      */
     private $policy;
 
+    /**
+     * @param LinkExtractorInterface $linkExtractor
+     * @param UriPolicy $policy
+     * @param QueueInterface $queue
+     */
     public function __construct(LinkExtractorInterface $linkExtractor, UriPolicy $policy, QueueInterface $queue)
     {
         $this->linkExtractor = $linkExtractor;
@@ -35,6 +45,9 @@ class ExtractAndQueueLinks  extends Extension
         $this->policy = $policy;
     }
 
+    /**
+     * @param ResponseReceived $event
+     */
     public function responseReceived(ResponseReceived $event): void
     {
         $response = $event->getResponse();
@@ -64,24 +77,9 @@ class ExtractAndQueueLinks  extends Extension
     }
 
     /**
-     * Returns an array of event names this subscriber wants to listen to.
-     *
-     * The array keys are event names and the value can be:
-     *
-     *  * The method name to call (priority defaults to 0)
-     *  * An array composed of the method name to call and the priority
-     *  * An array of arrays composed of the method names to call and respective
-     *    priorities, or 0 if unset
-     *
-     * For instance:
-     *
-     *  * array('eventName' => 'methodName')
-     *  * array('eventName' => array('methodName', $priority))
-     *  * array('eventName' => array(array('methodName1', $priority), array('methodName2')))
-     *
-     * @return array The event names to listen to
+     * @return array
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             ResponseReceived::class => 'responseReceived'

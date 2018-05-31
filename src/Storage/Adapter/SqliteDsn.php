@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace Zstate\Crawler\Storage\Adapter;
 
 
+/**
+ * @package Zstate\Crawler\Storage\Adapter
+ */
 class SqliteDsn
 {
     /**
@@ -11,6 +14,9 @@ class SqliteDsn
      */
     private $dsn;
 
+    /**
+     * @param string $dsn
+     */
     public function __construct(string $dsn = '')
     {
         $this->dsn = $dsn;
@@ -21,6 +27,10 @@ class SqliteDsn
         $this->guardDsn($this->dsn);
     }
 
+    /**
+     * @param string $string
+     * @return SqliteDsn
+     */
     public static function fromString(string $string): self
     {
         $string = str_replace('sqlite:', '', $string);
@@ -33,6 +43,9 @@ class SqliteDsn
         return new self('sqlite:' . $string);
     }
 
+    /**
+     * @param string $dsn
+     */
     private function guardDsn(string $dsn): void
     {
         if(false === strpos($dsn, 'sqlite:')) {

@@ -5,16 +5,26 @@ namespace Zstate\Crawler\Storage\Adapter;
 
 use PDO;
 
+/**
+ * @package Zstate\Crawler\Storage\Adapter
+ */
 class SqliteAdapter
 {
     private $storage;
 
+    /**
+     * @param SqliteDsn $dsn
+     */
     public function __construct(SqliteDsn $dsn)
     {
         $this->storage = new PDO($dsn->value());
         $this->storage->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
+    /**
+     * @param string $memoryOrFilePath
+     * @return SqliteAdapter
+     */
     public static function create(string $memoryOrFilePath): self
     {
         return new self(SqliteDsn::fromString($memoryOrFilePath));
@@ -42,12 +52,12 @@ class SqliteAdapter
         return $prepared->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function beginTransaction()
+    public function beginTransaction(): void
     {
         $this->storage->beginTransaction();
     }
 
-    public function commit()
+    public function commit(): void
     {
         $this->storage->commit();
     }

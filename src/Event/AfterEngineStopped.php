@@ -7,6 +7,9 @@ namespace Zstate\Crawler\Event;
 
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class AfterEngineStopped extends Event
 {
 }

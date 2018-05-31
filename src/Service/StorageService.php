@@ -6,6 +6,9 @@ namespace Zstate\Crawler\Service;
 
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 
+/**
+ * @package Zstate\Crawler\Service
+ */
 class StorageService
 {
     /**
@@ -13,11 +16,17 @@ class StorageService
      */
     private $sqliteAdapter;
 
+    /**
+     * @param SqliteAdapter $sqliteAdapter
+     */
     public function __construct(SqliteAdapter $sqliteAdapter)
     {
         $this->sqliteAdapter = $sqliteAdapter;
     }
 
+    /**
+     * @param string $path
+     */
     public function importFile(string $path): void
     {
         $data = file_get_contents($path);

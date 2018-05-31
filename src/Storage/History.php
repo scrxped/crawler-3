@@ -8,6 +8,9 @@ use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 
+/**
+ * @package Zstate\Crawler\Storage
+ */
 class History implements HistoryInterface
 {
     /**
@@ -15,11 +18,18 @@ class History implements HistoryInterface
      */
     private $storageAdapter;
 
+    /**
+     * @param SqliteAdapter $storageAdapter
+     */
     public function __construct(SqliteAdapter $storageAdapter)
     {
         $this->storageAdapter = $storageAdapter;
     }
 
+    /**
+     * @param RequestInterface $request
+     * @return bool
+     */
     public function contains(RequestInterface $request): bool
     {
         $fingerprint=RequestFingerprint::calculate($request);
@@ -35,6 +45,9 @@ class History implements HistoryInterface
         return true;
     }
 
+    /**
+     * @param RequestInterface $request
+     */
     public function add(RequestInterface $request): void
     {
         $fingerprint = RequestFingerprint::calculate($request);

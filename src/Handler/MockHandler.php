@@ -8,6 +8,9 @@ use GuzzleHttp\Promise;
 
 class MockHandler implements Handler
 {
+    /**
+     * @var \GuzzleHttp\Handler\MockHandler
+     */
     private $handler;
 
     /**

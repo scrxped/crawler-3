@@ -5,6 +5,9 @@ namespace Zstate\Crawler\Service;
 
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @package Zstate\Crawler\Service
+ */
 interface LinkExtractorInterface
 {
     /**

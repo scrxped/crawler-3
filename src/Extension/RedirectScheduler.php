@@ -13,6 +13,9 @@ use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
 use Zstate\Crawler\Storage\QueueInterface;
 
+/**
+ * @package Zstate\Crawler\Extension
+ */
 class RedirectScheduler extends Extension
 {
     /**
@@ -20,6 +23,9 @@ class RedirectScheduler extends Extension
      */
     private $queue;
 
+    /**
+     * @param QueueInterface $queue
+     */
     public function __construct(QueueInterface $queue)
     {
         $this->queue = $queue;
@@ -39,6 +45,12 @@ class RedirectScheduler extends Extension
         $this->queue->enqueue($redirectRequest);
     }
 
+    /**
+     * @param RequestInterface $request
+     * @param ResponseInterface $response
+     * @param array $protocols
+     * @return RequestInterface
+     */
     private function redirectRequest(RequestInterface $request, ResponseInterface $response, array $protocols = []): RequestInterface
     {
         $location = UriResolver::resolve($request->getUri(), new Uri($response->getHeaderLine('Location')));
@@ -48,6 +60,9 @@ class RedirectScheduler extends Extension
         return $redirectRequest;
     }
 
+    /**
+     * @return array
+     */
     public static function getSubscribedEvents(): array
     {
         return [

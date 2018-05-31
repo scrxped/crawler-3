@@ -6,8 +6,12 @@ namespace Zstate\Crawler\Handler;
 
 
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
 
+/**
+ * @package Zstate\Crawler\Handler
+ */
 class HandlerStack
 {
     /**
@@ -15,6 +19,9 @@ class HandlerStack
      */
     private $handlerStack;
 
+    /**
+     * @param Handler $handler
+     */
     public function __construct(Handler $handler)
     {
         $handlerStack = new \GuzzleHttp\HandlerStack($handler);
@@ -27,7 +34,10 @@ class HandlerStack
         $this->handlerStack = $handlerStack;
     }
 
-    public function setHandler(Handler $handler)
+    /**
+     * @param Handler $handler
+     */
+    public function setHandler(Handler $handler): void
     {
         $this->handlerStack->setHandler($handler);
     }
@@ -36,20 +46,27 @@ class HandlerStack
      * Invokes the handler stack as a composed handler
      *
      * @param RequestInterface $request
-     * @param array            $options
+     * @param array $options
+     * @return PromiseInterface
      */
-    public function __invoke(RequestInterface $request, array $options)
+    public function __invoke(RequestInterface $request, array $options): PromiseInterface
     {
         $handler = $this->handlerStack;
 
         return $handler($request, $options);
     }
 
-    public function push(callable $middleware)
+    /**
+     * @param callable $middleware
+     */
+    public function push(callable $middleware): void
     {
         $this->handlerStack->push($middleware);
     }
 
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         return $this->handlerStack->__toString();

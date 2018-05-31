@@ -8,6 +8,9 @@ namespace Zstate\Crawler\Policy;
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
 
+/**
+ * @package Zstate\Crawler\Policy
+ */
 class AllowDomains implements UriPolicy
 {
     /**
@@ -15,11 +18,18 @@ class AllowDomains implements UriPolicy
      */
     private $filterOptions;
 
+    /**
+     * @param FilterOptions $filterOptions
+     */
     public function __construct(FilterOptions $filterOptions)
     {
         $this->filterOptions = $filterOptions;
     }
 
+    /**
+     * @param AbsoluteUri $uri
+     * @return bool
+     */
     public function isUriAllowed(AbsoluteUri $uri): bool
     {
         $allowedDomains = $this->filterOptions->allowDomains();

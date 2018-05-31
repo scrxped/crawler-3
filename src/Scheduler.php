@@ -20,9 +20,15 @@ use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\HistoryInterface;
 use Zstate\Crawler\Storage\QueueInterface;
 
+/**
+ * @package Zstate\Crawler
+ */
 class Scheduler
 {
 
+    /**
+     * @var array
+     */
     private $pending = [];
 
     /**
@@ -137,6 +143,9 @@ class Scheduler
         while (--$concurrency && $this->nextRequest());
     }
 
+    /**
+     * @return bool
+     */
     private function nextRequest(): bool
     {
         // If queue is empty, then idling and waiting
@@ -194,6 +203,9 @@ class Scheduler
         }
     }
 
+    /**
+     * @param $idx
+     */
     private function step($idx): void
     {
         unset($this->pending[$idx]);

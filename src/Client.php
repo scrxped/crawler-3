@@ -33,6 +33,9 @@ use Zstate\Crawler\Storage\HistoryInterface;
 use Zstate\Crawler\Storage\Queue;
 use Zstate\Crawler\Storage\QueueInterface;
 
+/**
+ * @package Zstate\Crawler
+ */
 class Client
 {
     /**
@@ -49,19 +52,55 @@ class Client
      * @var ClientInterface
      */
     private $httpClient;
+
+    /**
+     * @var SqliteAdapter
+     */
     private $storageAdapter;
+
+    /**
+     * @var QueueInterface
+     */
     private $queue;
+
     /**
      * @var HandlerStack
      */
     private $handlerStack;
+
+    /**
+     * @var EventDispatcher
+     */
     private $dispatcher;
+
+    /**
+     * @var HistoryInterface
+     */
     private $history;
+
+    /**
+     * @var Handler
+     */
     private $handler;
+
+    /**
+     * @var array
+     */
     private $extentions = [];
+
+    /**
+     * @var Session
+     */
     private $session;
+
+    /**
+     * @var MiddlewareStack
+     */
     private $middlewareStack;
 
+    /**
+     * @param array $config
+     */
     public function __construct(array $config)
     {
         $this->initializeConfig($config);
@@ -77,6 +116,9 @@ class Client
         $this->initializeScheduler();
     }
 
+    /**
+     * @param array $config
+     */
     private function initializeConfig(array $config)
     {
         $this->config = Config::fromArray($config);
@@ -126,13 +168,16 @@ class Client
         return $this->history;
     }
 
-    public function setHandler(Handler $handler)
+    public function setHandler(Handler $handler): void
     {
         $this->handler = $handler;
 
         $this->getHandlerStack()->setHandler($this->handler);
     }
 
+    /**
+     * @return Handler
+     */
     private function getHandler(): Handler
     {
         if(null === $this->handler) {
@@ -149,6 +194,9 @@ class Client
         $this->handlerStack = $stack;
     }
 
+    /**
+     * @return HandlerStack
+     */
     private function getHandlerStack(): HandlerStack
     {
         return $this->handlerStack;
@@ -204,12 +252,18 @@ class Client
         $this->session = new Session($this->getHttpClient());
     }
 
+    /**
+     * @return Session
+     */
     private function getSession(): Session
     {
         return $this->session;
     }
 
-    public function addExtension(Extension $extension)
+    /**
+     * @param Extension $extension
+     */
+    public function addExtension(Extension $extension): void
     {
         $extension->initialize($this->getConfig(), $this->getSession());
 
@@ -226,7 +280,8 @@ class Client
 
         $this->addExtension(new RedirectScheduler($this->getQueue()));
 
-        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, new AggregateUriPolicy($this->getConfig()->filterOptions()), $this->getQueue()));   }
+        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, new AggregateUriPolicy($this->getConfig()->filterOptions()), $this->getQueue()));
+    }
 
     private function initializeEventDispatcher(): void
     {
@@ -272,6 +327,9 @@ class Client
         }
     }
 
+    /**
+     * @return MiddlewareStack
+     */
     private function getMiddlewareStack(): MiddlewareStack
     {
         return $this->middlewareStack;

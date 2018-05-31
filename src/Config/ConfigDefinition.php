@@ -8,6 +8,9 @@ use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
+/**
+ * @package Zstate\Crawler\Config
+ */
 class ConfigDefinition implements ConfigurationInterface
 {
     /**
@@ -45,6 +48,9 @@ class ConfigDefinition implements ConfigurationInterface
         return $treeBuilder;
     }
 
+    /**
+     * @return NodeDefinition
+     */
     private function autoThrottle(): NodeDefinition
     {
         $builder = new TreeBuilder();
@@ -70,6 +76,9 @@ class ConfigDefinition implements ConfigurationInterface
         return $node;
     }
 
+    /**
+     * @return NodeDefinition
+     */
     private function filterOptions(): NodeDefinition
     {
         $builder = new TreeBuilder();
@@ -107,6 +116,9 @@ class ConfigDefinition implements ConfigurationInterface
         return $node;
     }
 
+    /**
+     * @return NodeDefinition
+     */
     private function requestOptions(): NodeDefinition
     {
         $builder = new TreeBuilder();

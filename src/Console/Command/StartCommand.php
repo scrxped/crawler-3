@@ -16,6 +16,9 @@ use Zstate\Crawler\Client;
 use Zstate\Crawler\Console\FileSystem;
 use Zstate\Crawler\Extension\ConsoleLogging;
 
+/**
+ * @package Zstate\Crawler\Console\Command
+ */
 class StartCommand extends Command
 {
     /**
@@ -23,6 +26,10 @@ class StartCommand extends Command
      */
     private $filesystem;
 
+    /**
+     * StartCommand constructor.
+     * @param null|FileSystem $filesystem
+     */
     public function __construct(? FileSystem $filesystem = null)
     {
         parent::__construct();
@@ -34,7 +41,7 @@ class StartCommand extends Command
         $this->filesystem = $filesystem;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('start')
             ->setDescription('Starts the crawler using provided configuration file.')
@@ -47,7 +54,11 @@ class StartCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $configPath = $input->getOption('config') ?? "./crawler.yml";
 
@@ -68,11 +79,19 @@ class StartCommand extends Command
         $client->run();
     }
 
+    /**
+     * @param string $path
+     * @return array
+     */
     private function getConfigFromFile(string $path): array
     {
         return Yaml::parse($this->filesystem->fileGetContent($path));
     }
 
+    /**
+     * @param string $configPath
+     * @return Client
+     */
     private function getClient(string $configPath): Client
     {
         $config = $this->getConfigFromFile($configPath);

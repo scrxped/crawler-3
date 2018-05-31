@@ -10,12 +10,25 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Zstate\Crawler\Config\Config;
 use Zstate\Crawler\Session;
 
+/**
+ * @package Zstate\Crawler\Extension
+ */
 abstract class Extension implements EventSubscriberInterface
 {
+    /**
+     * @var Config
+     */
     private $config;
 
+    /**
+     * @var Session
+     */
     private $session;
 
+    /**
+     * @param Config $config
+     * @param Session $session
+     */
     public function initialize(Config $config, Session $session)
     {
         $this->config = $config;
@@ -30,6 +43,9 @@ abstract class Extension implements EventSubscriberInterface
         return $this->config;
     }
 
+    /**
+     * @return Session
+     */
     public function getSession(): Session
     {
         return $this->session;

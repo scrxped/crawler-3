@@ -8,6 +8,9 @@ namespace Zstate\Crawler\Event;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class BeforeRequestSent extends Event
 {
     /**
@@ -15,6 +18,9 @@ class BeforeRequestSent extends Event
      */
     private $request;
 
+    /**
+     * @param RequestInterface $request
+     */
     public function __construct(RequestInterface $request)
     {
         $this->request = $request;

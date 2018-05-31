@@ -7,6 +7,9 @@ use GuzzleHttp\Psr7\UriNormalizer;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * @package Zstate\Crawler\Service
+ */
 class RequestFingerprint
 {
 

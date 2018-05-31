@@ -11,6 +11,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Zstate\Crawler\Console\FileSystem;
 
+/**
+ * @package Zstate\Crawler\Console\Command
+ */
 class InitCommand extends Command
 {
     /**
@@ -18,6 +21,10 @@ class InitCommand extends Command
      */
     private $filesystem;
 
+    /**
+     * InitCommand constructor.
+     * @param null|FileSystem $filesystem
+     */
     public function __construct(? FileSystem $filesystem = null)
     {
         parent::__construct();
@@ -29,14 +36,18 @@ class InitCommand extends Command
         $this->filesystem = $filesystem;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('init')
             ->setDescription('Creates the default configuration file.')
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $path = './crawler.yml';
 
@@ -47,6 +58,9 @@ class InitCommand extends Command
         $output->writeln("<info>Created config file: " . $path . "</info>");
     }
 
+    /**
+     * @return string
+     */
     public function getYmlTemplate(): string
     {
         $yml = <<<YML

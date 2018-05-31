@@ -6,6 +6,9 @@ namespace Zstate\Crawler\Middleware;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+/**
+ * @package Zstate\Crawler\Middleware
+ */
 interface ResponseMiddleware
 {
     /**

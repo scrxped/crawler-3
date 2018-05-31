@@ -6,6 +6,9 @@ namespace Zstate\Crawler\Exception;
 
 use RuntimeException;
 
+/**
+ * @package Zstate\Crawler\Exception
+ */
 class InvalidRequestException extends RuntimeException
 {
 }

@@ -8,6 +8,9 @@ namespace Zstate\Crawler;
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\UriInterface;
 
+/**
+ * @package Zstate\Crawler
+ */
 class AbsoluteUri
 {
     /**
@@ -15,6 +18,9 @@ class AbsoluteUri
      */
     private $uri;
 
+    /**
+     * @param UriInterface $uri
+     */
     public function __construct(UriInterface $uri)
     {
         if(! Uri::isAbsolute($uri)) {
@@ -24,11 +30,18 @@ class AbsoluteUri
         $this->uri = $uri;
     }
 
+    /**
+     * @param string $uri
+     * @return AbsoluteUri
+     */
     public static function fromString(string $uri): self
     {
         return new self(new Uri($uri));
     }
 
+    /**
+     * @return UriInterface
+     */
     public function getValue(): UriInterface
     {
         return $this->uri;

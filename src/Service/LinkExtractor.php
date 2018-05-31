@@ -9,6 +9,9 @@ use Psr\Http\Message\UriInterface;
 use Symfony\Component\DomCrawler\Crawler;
 use Zstate\Crawler\Config\FilterOptions;
 
+/**
+ * @package Zstate\Crawler\Service
+ */
 class LinkExtractor implements LinkExtractorInterface
 {
     /**

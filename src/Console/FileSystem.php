@@ -10,7 +10,6 @@ use RuntimeException;
 /**
  * Simple wrapper for global file read write functions for testing purposes
  *
- * Class FileSystem
  * @package Zstate\Crawler\Console
  * @internal
  */

@@ -9,6 +9,9 @@ use Exception;
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class RequestFailed extends Event
 {
     /**
@@ -20,6 +23,10 @@ class RequestFailed extends Event
      */
     private $request;
 
+    /**
+     * @param Exception $reason
+     * @param RequestInterface $request
+     */
     public function __construct(Exception $reason, RequestInterface $request)
     {
         $this->reason = $reason;

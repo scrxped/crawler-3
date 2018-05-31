@@ -8,6 +8,9 @@ namespace Zstate\Crawler\Event;
 use GuzzleHttp\TransferStats;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class TransferStatisticReceived extends Event
 {
     /**
@@ -15,6 +18,9 @@ class TransferStatisticReceived extends Event
      */
     private $transferStats;
 
+    /**
+     * @param TransferStats $transferStats
+     */
     public function __construct(TransferStats $transferStats)
     {
         $this->transferStats = $transferStats;

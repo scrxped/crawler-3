@@ -19,12 +19,18 @@ class Storage extends Extension
         $this->storageService = $storageService;
     }
 
+    /**
+     * @param BeforeEngineStarted $event
+     */
     public function beforeEngineStarted(BeforeEngineStarted $event): void
     {
         $this->storageService->importFile(__DIR__ . '/../Storage/Schema/main.sql');
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return array
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             BeforeEngineStarted::class => 'beforeEngineStarted'

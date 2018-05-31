@@ -12,6 +12,9 @@ use webignition\RobotsTxt\File\Parser;
 use webignition\RobotsTxt\Inspector\Inspector;
 use Zstate\Crawler\Exception\InvalidRequestException;
 
+/**
+ * @package Zstate\Crawler\Middleware
+ */
 class RobotsTxtMiddleware implements RequestMiddleware
 {
     private const USER_AGENT = 'zstate/crawler';
@@ -21,6 +24,9 @@ class RobotsTxtMiddleware implements RequestMiddleware
      */
     private $client;
 
+    /**
+     * @var array
+     */
     private $cache = [];
 
     public function __construct()
@@ -28,6 +34,9 @@ class RobotsTxtMiddleware implements RequestMiddleware
         $this->client = new Client;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function processRequest(RequestInterface $request): RequestInterface
     {
         $robotTxtUri = (string) $request->getUri()->withPath('/robots.txt');
@@ -65,6 +74,10 @@ class RobotsTxtMiddleware implements RequestMiddleware
         throw new InvalidRequestException('The path "' . $request->getUri()->getPath() . '" is not allowed by robots.txt.');
     }
 
+    /**
+     * @param string $robotTxtContent
+     * @return Inspector
+     */
     private function getInspector(string $robotTxtContent): Inspector
     {
         $parser = new Parser;

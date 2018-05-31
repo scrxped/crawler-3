@@ -9,10 +9,16 @@ use GuzzleHttp\TransferStats;
 use Zstate\Crawler\Config\AutoThrottleOptions;
 use Zstate\Crawler\Event\TransferStatisticReceived;
 
+/**
+ * @package Zstate\Crawler\Extension
+ */
 class AutoThrottle extends Extension
 {
     private $previousDelay = 0;
 
+    /**
+     * @param TransferStatisticReceived $event
+     */
     public function transferStatisticReceived(TransferStatisticReceived $event): void
     {
         $config = $this->getConfig();
@@ -26,6 +32,11 @@ class AutoThrottle extends Extension
         $this->delay($autoThrottleOptions, $event->getTransferStats(), $config->concurrency());
     }
 
+    /**
+     * @param AutoThrottleOptions $autoThrottleOptions
+     * @param TransferStats $transferStats
+     * @param int $concurrency
+     */
     private function delay(AutoThrottleOptions $autoThrottleOptions, TransferStats $transferStats, int $concurrency): void
     {
         $minDelay = $autoThrottleOptions->getMinDelay();
@@ -69,7 +80,10 @@ class AutoThrottle extends Extension
         usleep($newDelay);
     }
 
-    public static function getSubscribedEvents()
+    /**
+     * @return array
+     */
+    public static function getSubscribedEvents(): array
     {
         return [
             TransferStatisticReceived::class => 'transferStatisticReceived'

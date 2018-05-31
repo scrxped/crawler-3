@@ -7,6 +7,9 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\Event;
 
+/**
+ * @package Zstate\Crawler\Event
+ */
 class ResponseReceived extends Event
 {
     /**
@@ -18,6 +21,10 @@ class ResponseReceived extends Event
      */
     private $request;
 
+    /**
+     * @param ResponseInterface $response
+     * @param RequestInterface $request
+     */
     public function __construct(ResponseInterface $response, RequestInterface $request)
     {
         $this->response = $response;

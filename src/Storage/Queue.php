@@ -9,6 +9,9 @@ use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 
+/**
+ * @package Zstate\Crawler\Storage
+ */
 class Queue implements QueueInterface
 {
     /**
@@ -16,11 +19,17 @@ class Queue implements QueueInterface
      */
     private $storageAdapter;
 
+    /**
+     * @param SqliteAdapter $storageAdapter
+     */
     public function __construct(SqliteAdapter $storageAdapter)
     {
         $this->storageAdapter = $storageAdapter;
     }
 
+    /**
+     * @param RequestInterface $request
+     */
     public function enqueue(RequestInterface $request): void
     {
         $fingerprint = RequestFingerprint::calculate($request);
@@ -33,6 +42,9 @@ class Queue implements QueueInterface
 
     }
 
+    /**
+     * @return RequestInterface
+     */
     public function dequeue(): RequestInterface
     {
         $this->storageAdapter->beginTransaction();
@@ -46,6 +58,9 @@ class Queue implements QueueInterface
         return $this->deserializeRequest($data[0]['data']);
     }
 
+    /**
+     * @return bool
+     */
     public function isEmpty(): bool
     {
         $data = $this->storageAdapter->fetchAll('SELECT fingerprint FROM `queue` LIMIT 1');
@@ -57,6 +72,10 @@ class Queue implements QueueInterface
         return false;
     }
 
+    /**
+     * @param RequestInterface $request
+     * @return string
+     */
     private function serializeRequest(RequestInterface $request): string
     {
         $data = [
@@ -70,6 +89,10 @@ class Queue implements QueueInterface
 
     }
 
+    /**
+     * @param string $jsonData
+     * @return RequestInterface
+     */
     private function deserializeRequest(string $jsonData): RequestInterface
     {
         $data = \GuzzleHttp\json_decode($jsonData,true);
