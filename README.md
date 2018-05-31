@@ -283,7 +283,7 @@ Then configure `crawler.yml` and run the crawler with a command:
 
 ```
 
-##Thanks for Inspiration
+## Thanks for Inspiration
 
 https://scrapy.org/
 
