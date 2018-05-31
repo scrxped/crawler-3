@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Config;
 
-
 use Symfony\Component\Config\Definition\Processor;
 
 /**
@@ -37,7 +36,6 @@ class Config
         $config = $processor->processConfiguration($configDefinition, $config);
 
         return new self($config);
-
     }
 
     /**

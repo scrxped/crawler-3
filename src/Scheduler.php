@@ -79,8 +79,8 @@ class Scheduler
         HistoryInterface $history,
         QueueInterface $queue,
         MiddlewareStack $middlewareStack,
-        int $concurrency)
-    {
+        int $concurrency
+    ) {
         $this->concurrency = $concurrency;
         $this->client = $client;
         $this->history = $history;
@@ -96,8 +96,7 @@ class Scheduler
 
     public function run(): void
     {
-        while(! $this->queue->isEmpty()) {
-
+        while (! $this->queue->isEmpty()) {
             $this->schedule();
 
             reset($this->pending);
@@ -106,7 +105,6 @@ class Scheduler
             // ensuring that indexes are maintained (precluding array_shift).
             /** @var PromiseInterface $promise */
             while ($promise = current($this->pending)) {
-
                 $idx = key($this->pending);
                 next($this->pending);
 
@@ -149,14 +147,14 @@ class Scheduler
     private function nextRequest(): bool
     {
         // If queue is empty, then idling and waiting
-        if($this->queue->isEmpty()) {
+        if ($this->queue->isEmpty()) {
             return false;
         }
 
         $request = $this->queue->dequeue();
 
         // If request is in the history, then idling
-        if($this->history->contains($request)) {
+        if ($this->history->contains($request)) {
             return false;
         }
 
@@ -195,7 +193,6 @@ class Scheduler
             $this->history->add($request);
 
             return true;
-
         } catch (InvalidRequestException $e) {
             $this->eventDispatcher->dispatch(RequestFailed::class, new RequestFailed($e, $request));
             // Skipping the request if it is invalid (For example, if the request is not allowed by robots.txt rule)

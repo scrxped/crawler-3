@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Extension;
 
-
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Service\StorageService;
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Middleware;
 
-
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\RequestInterface;
@@ -43,12 +42,12 @@ class RobotsTxtMiddleware implements RequestMiddleware
 
         // Checking cache first
         $robotTxtContent = "";
-        if(empty($this->cache[$robotTxtUri])) {
+        if (empty($this->cache[$robotTxtUri])) {
             // Getting content of the robots.txt file
             $robotTxtResponse = $this->client->request('GET', $robotTxtUri);
 
             // Robots.txt file exists
-            if($robotTxtResponse->getStatusCode() === 200) {
+            if ($robotTxtResponse->getStatusCode() === 200) {
                 $robotTxtContent = (string) $robotTxtResponse->getBody();
 
                 // Store the content of the robots.txt in the cache
@@ -59,7 +58,7 @@ class RobotsTxtMiddleware implements RequestMiddleware
         }
 
         // If the content is still empty, then robots.txt doesn't exist or is empty (no rules). Go to the next middleware
-        if(empty($robotTxtContent)) {
+        if (empty($robotTxtContent)) {
             return $request;
         }
 
@@ -88,6 +87,4 @@ class RobotsTxtMiddleware implements RequestMiddleware
 
         return $inspector;
     }
-
-
 }

@@ -2,7 +2,6 @@
 
 namespace Zstate\Crawler\Tests\Console;
 
-
 use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Console\FileSystem;
 
@@ -25,7 +24,6 @@ class FileSystemTest extends TestCase
         $fileSystem = new FileSystem;
 
         $content = $fileSystem->fileGetContent(__DIR__ . "/non-existing-file");
-
     }
 
     public function testFilePutContent()

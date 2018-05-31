@@ -20,7 +20,6 @@ class HistoryTest extends TestCase
         $this->adapter = new SqliteAdapter(new SqliteDsn('sqlite::memory:'));
         $storageService = new StorageService($this->adapter);
         $storageService->importFile(__DIR__ . '/../../Storage/Schema/main.sql');
-
     }
 
     public function tearDown()

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Service;
 
-
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
 
 /**

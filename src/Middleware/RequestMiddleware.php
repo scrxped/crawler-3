@@ -2,7 +2,6 @@
 
 namespace Zstate\Crawler\Middleware;
 
-
 use Psr\Http\Message\RequestInterface;
 
 /**

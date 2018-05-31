@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Policy;
 
-
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
 use function Zstate\Crawler\is_uri_matched_pattern;

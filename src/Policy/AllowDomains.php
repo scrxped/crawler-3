@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Policy;
 
-
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
 
@@ -34,7 +33,7 @@ class AllowDomains implements UriPolicy
     {
         $allowedDomains = $this->filterOptions->allowDomains();
 
-        if(! empty($allowedDomains)) {
+        if (! empty($allowedDomains)) {
             return in_array($uri->getValue()->getHost(), $allowedDomains);
         }
 

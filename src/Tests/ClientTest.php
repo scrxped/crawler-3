@@ -357,6 +357,4 @@ class ClientTest extends TestCase
         ];
         $this->assertEquals($expected, $log->getLog());
     }
-
-
 }

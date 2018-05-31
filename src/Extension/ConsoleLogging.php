@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Extension;
 
-
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Log\LoggerInterface;
@@ -40,7 +39,7 @@ class ConsoleLogging extends Extension
 
         $message = $this->getMessageFormatted($request, $statusCode);
 
-        if($statusCode >= 400) {
+        if ($statusCode >= 400) {
             $this->logger->error($message);
         } else {
             $this->logger->info($message);

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Storage\Adapter;
 
-
 /**
  * @package Zstate\Crawler\Storage\Adapter
  */
@@ -20,7 +19,7 @@ class SqliteDsn
     public function __construct(string $dsn = '')
     {
         $this->dsn = $dsn;
-        if(empty($this->dsn)) {
+        if (empty($this->dsn)) {
             $this->dsn = 'sqlite::memory:';
         }
 
@@ -34,9 +33,9 @@ class SqliteDsn
     public static function fromString(string $string): self
     {
         $string = str_replace('sqlite:', '', $string);
-        $string = trim($string,':');
+        $string = trim($string, ':');
 
-        if('memory' === $string || empty($string)) {
+        if ('memory' === $string || empty($string)) {
             return new self;
         }
 
@@ -48,7 +47,7 @@ class SqliteDsn
      */
     private function guardDsn(string $dsn): void
     {
-        if(false === strpos($dsn, 'sqlite:')) {
+        if (false === strpos($dsn, 'sqlite:')) {
             throw new \RuntimeException('The DSN must be valid SQLite DSN.');
         }
     }

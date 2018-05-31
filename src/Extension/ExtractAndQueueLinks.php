@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Extension;
 
-
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
@@ -16,7 +15,7 @@ use Zstate\Crawler\Storage\QueueInterface;
 /**
  * @package Zstate\Crawler\Extension
  */
-class ExtractAndQueueLinks  extends Extension
+class ExtractAndQueueLinks extends Extension
 {
     /**
      * @var LinkExtractorInterface
@@ -57,12 +56,10 @@ class ExtractAndQueueLinks  extends Extension
         $currentUri = $request->getUri();
 
         foreach ($links as $extractedLink) {
-
-
             $visitUri = UriResolver::resolve($currentUri, new Uri($extractedLink));
             $absoluteUri  =  new AbsoluteUri($visitUri);
 
-            if(! $this->policy->isUriAllowed($absoluteUri)) {
+            if (! $this->policy->isUriAllowed($absoluteUri)) {
                 continue;
             }
 
@@ -73,7 +70,6 @@ class ExtractAndQueueLinks  extends Extension
 
             $this->queue->enqueue($request);
         }
-
     }
 
     /**

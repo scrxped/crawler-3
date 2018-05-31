@@ -2,7 +2,6 @@
 
 namespace Zstate\Crawler\Tests\Console\Command;
 
-
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -35,5 +34,4 @@ class StartCommandTest extends TestCase
         $this->assertContains("[info] GET http://site2.local/service.html 200", $output);
         $this->assertContains("[info] GET http://site2.local/contacts.html 200", $output);
     }
-
 }

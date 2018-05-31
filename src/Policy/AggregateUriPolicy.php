@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Policy;
 
-
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
 
@@ -45,13 +44,11 @@ class AggregateUriPolicy implements UriPolicy
     {
         /** @var UriPolicy $policy */
         foreach ($this->policies as $policy) {
-            if(! $policy->isUriAllowed($uri)) {
+            if (! $policy->isUriAllowed($uri)) {
                 return false;
             }
         }
 
         return true;
     }
-
-
 }

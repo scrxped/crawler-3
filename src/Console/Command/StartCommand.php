@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Console\Command;
 
-
 use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,7 +33,7 @@ class StartCommand extends Command
     {
         parent::__construct();
 
-        if(! $filesystem) {
+        if (! $filesystem) {
             $filesystem = new FileSystem;
         }
 

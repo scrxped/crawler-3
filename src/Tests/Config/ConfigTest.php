@@ -8,7 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigTest extends TestCase
 {
-
     public function testDefaults()
     {
         $config = Config::fromArray([
@@ -39,7 +38,7 @@ class ConfigTest extends TestCase
             ]
         ];
 
-        $this->assertEquals($expected,$config->toArray());
+        $this->assertEquals($expected, $config->toArray());
     }
 
     public function testLoginConfigException()
@@ -137,8 +136,6 @@ class ConfigTest extends TestCase
             'concurrency' => 10,
             'save_progress_in' => 'memory',
         ];
-        $this->assertEquals($expected,$config->toArray());
+        $this->assertEquals($expected, $config->toArray());
     }
-
-
 }

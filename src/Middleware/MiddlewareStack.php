@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Middleware;
 
-
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -55,7 +54,6 @@ class MiddlewareStack
     public function getRequestMiddlewareStack(): callable
     {
         if (! $this->cachedRequestMiddlewareStack) {
-
             $prev = function (RequestInterface $request): RequestInterface {
                 return $request;
             };
@@ -79,7 +77,6 @@ class MiddlewareStack
     public function getResponseMiddlewareStack(): callable
     {
         if (! $this->cachedResponseMiddlewareStack) {
-
             $prev = function (ResponseInterface $response, RequestInterface $request): ResponseInterface {
                 return $response;
             };

@@ -33,5 +33,4 @@ class LinkExtractorTest extends TestCase
             '/logout'
         ], $links);
     }
-
 }

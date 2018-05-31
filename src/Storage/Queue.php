@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Storage;
 
-
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
@@ -37,9 +36,9 @@ class Queue implements QueueInterface
         $data = $this->serializeRequest($request);
 
         $this->storageAdapter->executeQuery(
-            'INSERT OR IGNORE INTO `queue` (`fingerprint`,`data`) VALUES (?,?)', [$fingerprint, $data]
+            'INSERT OR IGNORE INTO `queue` (`fingerprint`,`data`) VALUES (?,?)',
+            [$fingerprint, $data]
         );
-
     }
 
     /**
@@ -65,7 +64,7 @@ class Queue implements QueueInterface
     {
         $data = $this->storageAdapter->fetchAll('SELECT fingerprint FROM `queue` LIMIT 1');
 
-        if(empty($data)) {
+        if (empty($data)) {
             return true;
         }
 
@@ -86,7 +85,6 @@ class Queue implements QueueInterface
         ];
 
         return \GuzzleHttp\json_encode($data);
-
     }
 
     /**
@@ -95,7 +93,7 @@ class Queue implements QueueInterface
      */
     private function deserializeRequest(string $jsonData): RequestInterface
     {
-        $data = \GuzzleHttp\json_decode($jsonData,true);
+        $data = \GuzzleHttp\json_decode($jsonData, true);
 
         return new Request($data['method'], $data['uri'], $data['headers'], $data['body']);
     }

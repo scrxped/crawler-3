@@ -29,7 +29,7 @@ function is_uri_matched_pattern(UriInterface $uri, string $pattern): bool
 
     $match = preg_match("/" . $pattern . "/i", (string) $uri);
 
-    if(false === $match) {
+    if (false === $match) {
         throw new \InvalidArgumentException('Invalid pattern: ' . $pattern);
     }
 

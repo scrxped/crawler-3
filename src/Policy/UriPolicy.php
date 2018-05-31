@@ -2,7 +2,6 @@
 
 namespace Zstate\Crawler\Policy;
 
-
 use Zstate\Crawler\AbsoluteUri;
 
 /**

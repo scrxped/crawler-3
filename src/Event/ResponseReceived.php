@@ -2,7 +2,6 @@
 
 namespace Zstate\Crawler\Event;
 
-
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\Event;

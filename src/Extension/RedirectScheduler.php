@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Extension;
 
-
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
@@ -36,7 +35,7 @@ class RedirectScheduler extends Extension
         $response = $event->getResponse();
         $request = $event->getRequest();
 
-        if(! is_redirect($response)) {
+        if (! is_redirect($response)) {
             return;
         }
 

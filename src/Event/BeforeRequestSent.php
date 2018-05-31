@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Event;
 
-
 use Psr\Http\Message\RequestInterface;
 use Symfony\Component\EventDispatcher\Event;
 

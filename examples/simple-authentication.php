@@ -27,7 +27,6 @@ $password = 'password';
 
 
 $client->addExtension(new class($loginUri, $username, $password) extends Extension {
-
     private $loginUri;
 
     private $username;

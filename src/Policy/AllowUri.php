@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Policy;
 
-
 use Psr\Http\Message\UriInterface;
 use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Config\FilterOptions;
@@ -36,7 +35,7 @@ class AllowUri implements UriPolicy
     {
         $allowedUriPatterns = $this->filterOptions->allow();
 
-        if(empty($allowedUriPatterns)) {
+        if (empty($allowedUriPatterns)) {
             return true;
         }
 

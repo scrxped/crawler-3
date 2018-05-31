@@ -61,8 +61,8 @@ class QueueTest extends TestCase
 
         $this->assertTrue($queue->isEmpty());
 
-        $queue->enqueue(new Request('GET','/test.html'));
-        $queue->enqueue(new Request('GET','/test.html'));
+        $queue->enqueue(new Request('GET', '/test.html'));
+        $queue->enqueue(new Request('GET', '/test.html'));
 
         $this->assertFalse($queue->isEmpty());
 
@@ -70,7 +70,4 @@ class QueueTest extends TestCase
 
         $this->assertTrue($queue->isEmpty());
     }
-
-
-
 }

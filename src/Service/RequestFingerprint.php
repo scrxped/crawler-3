@@ -103,7 +103,8 @@ class RequestFingerprint
      */
     private static function normalizeUri(UriInterface $uri): UriInterface
     {
-        $uri = UriNormalizer::normalize($uri,
+        $uri = UriNormalizer::normalize(
+            $uri,
             UriNormalizer::DECODE_UNRESERVED_CHARACTERS
             | UriNormalizer::CAPITALIZE_PERCENT_ENCODING
             | UriNormalizer::CONVERT_EMPTY_PATH

@@ -2,6 +2,6 @@
 
 <?php
 
-if(! empty($_GET['productId'])) {
+if (! empty($_GET['productId'])) {
     echo "Product 1 ID: " . $_GET['productId'];
 }

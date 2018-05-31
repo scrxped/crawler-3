@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Storage;
 
-
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\Adapter\SqliteAdapter;
@@ -35,10 +34,11 @@ class History implements HistoryInterface
         $fingerprint=RequestFingerprint::calculate($request);
 
         $result = $this->storageAdapter->fetchAll(
-            'SELECT `fingerprint` FROM `history` WHERE `fingerprint`=? LIMIT 1',[$fingerprint]
+            'SELECT `fingerprint` FROM `history` WHERE `fingerprint`=? LIMIT 1',
+            [$fingerprint]
         );
 
-        if(empty($result)) {
+        if (empty($result)) {
             return false;
         }
 
@@ -52,7 +52,8 @@ class History implements HistoryInterface
     {
         $fingerprint = RequestFingerprint::calculate($request);
         $this->storageAdapter->executeQuery(
-            'INSERT OR IGNORE INTO `history` (`fingerprint`) VALUES (?)', [$fingerprint]
+            'INSERT OR IGNORE INTO `history` (`fingerprint`) VALUES (?)',
+            [$fingerprint]
         );
     }
 }

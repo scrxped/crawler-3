@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Console\Command;
 
-
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,7 +28,7 @@ class InitCommand extends Command
     {
         parent::__construct();
 
-        if(! $filesystem) {
+        if (! $filesystem) {
             $filesystem = new FileSystem;
         }
 

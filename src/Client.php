@@ -180,7 +180,7 @@ class Client
      */
     private function getHandler(): Handler
     {
-        if(null === $this->handler) {
+        if (null === $this->handler) {
             return new CurlMultiHandler(new GuzzleCurlMultiHandler);
         }
 
@@ -322,7 +322,7 @@ class Client
 
         // Adding robots.txt middleware if enabled.
         $filterOptions = $this->getConfig()->filterOptions();
-        if($filterOptions->obeyRobotsTxt()) {
+        if ($filterOptions->obeyRobotsTxt()) {
             $this->addRequestMiddleware(new RobotsTxtMiddleware);
         }
     }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler\Console;
 
-
 use RuntimeException;
 
 /**
