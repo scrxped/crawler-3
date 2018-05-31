@@ -6,7 +6,6 @@ use Psr\Http\Message\ResponseInterface;
 use Zstate\Crawler\Client;
 use Zstate\Crawler\Event\BeforeEngineStarted;
 use Zstate\Crawler\Extension\Extension;
-use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Middleware\ResponseMiddleware;
 
 require_once __DIR__ . '/../vendor/autoload.php';
