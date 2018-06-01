@@ -261,7 +261,7 @@ $client->run();
 | AfterRequestSent          | After the request is scheduled                |
 | TransferStatisticReceived | When a handler has finished sending a request. Allows you to get access to transfer statistics of a request and access the lower level transfer details. |
 | ResponseHeadersReceived   | When the HTTP headers of the response have been received but the body has not yet begun to download. Useful if you want to reject responses that are greater than certain size for example. |
-| RequestFailed             | When the request is failed or the exception `InvalidRequestException` has been  thrown in the middleware. |
+| RequestFailed             | When the request is failed or the exception `InvalidRequestException` has been  thrown from the middleware. |
 | ResponseReceived          | When the response is received                 |
 | AfterEngineStopped        | After engine stopped crawling                 |
 
