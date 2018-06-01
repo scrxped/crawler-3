@@ -53,13 +53,13 @@ class ConfigDefinition implements ConfigurationInterface
     private function autoThrottle(): NodeDefinition
     {
         $builder = new TreeBuilder();
-        $node = $builder->root('auto_throttle');
+        $node = $builder->root('autothrottle');
 
         $node
             ->addDefaultsIfNotSet()
             ->children()
             ->booleanNode('enabled')
-                ->info('Enable auto throttle extension.')
+                ->info('Enables autothrottle extension.')
                 ->defaultTrue()
             ->end()
             ->integerNode('min_delay')
@@ -91,22 +91,22 @@ class ConfigDefinition implements ConfigurationInterface
                 ->defaultValue(false)
             ->end()
             ->arrayNode('allow')
-                ->info('A list of regular expressions that the urls must match in order to be extracted. If not given (or empty), it will match all links. It has precedence over the deny parameter.')
+                ->info('A list of regular expressions that the urls must match in order to be extracted. If not given (or empty), it will match all links.')
                 ->scalarPrototype()->end()
                 ->defaultValue([])
             ->end()
             ->arrayNode('allow_domains')
-                ->info('A list of string containing domains which will be considered for extracting the links. It has precedence over the deny parameter.')
+                ->info('A list of string containing domains which will be considered for extracting the links.')
                 ->scalarPrototype()->end()
                 ->defaultValue([])
             ->end()
             ->arrayNode('deny_domains')
-                ->info('A list of strings containing domains which won’t be considered for extracting the links.')
+                ->info('A list of strings containing domains which won’t be considered for extracting the links. It has precedence over the allow_domains parameter.')
                 ->scalarPrototype()->end()
                 ->defaultValue([])
             ->end()
             ->arrayNode('deny')
-                ->info('A list of regular expressions) that the urls must match in order to be excluded (ie. not extracted).')
+                ->info('A list of regular expressions) that the urls must match in order to be excluded (ie. not extracted). It has precedence over the allow parameter.')
                 ->scalarPrototype()->end()
                 ->defaultValue([])
             ->end()

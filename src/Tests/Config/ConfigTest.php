@@ -31,7 +31,7 @@ class ConfigTest extends TestCase
                 'deny_domains' => [],
                 'deny' => []
             ],
-            'auto_throttle' => [
+            'autothrottle' => [
                 'enabled' => true,
                 'min_delay' => 0,
                 'max_delay' => 60
@@ -67,6 +67,8 @@ class ConfigTest extends TestCase
     {
         $config = Config::fromArray([
             'start_uri' => ['http://test.com'],
+            'concurrency' => 10,
+            'save_progress_in' => '/path/to/my/sqlite.db',
             'filter' => [
                 'robotstxt_obey' => false,
                 'allow' => ['test','test1'],
@@ -81,6 +83,7 @@ class ConfigTest extends TestCase
                 'debug' => true,
                 'connect_timeout' => 0,
                 'timeout' => 0,
+                'read_timeout' => 60,
                 'decode_content' => true,
                 'force_ip_resolve' => null,
                 'proxy' => [
@@ -93,7 +96,7 @@ class ConfigTest extends TestCase
                 'cert' => '/path/server.pem',
                 'ssl_key' => ['/path/key.pem', 'password']
             ],
-            'auto_throttle' => [
+            'autothrottle' => [
                 'enabled' => true,
                 'min_delay' => 0,
                 'max_delay' => 60
@@ -102,6 +105,8 @@ class ConfigTest extends TestCase
 
         $expected = [
             'start_uri' => ['http://test.com'],
+            'concurrency' => 10,
+            'save_progress_in' => '/path/to/my/sqlite.db',
             'filter' => [
                 'robotstxt_obey' => false,
                 'allow' => ['test','test1'],
@@ -116,6 +121,7 @@ class ConfigTest extends TestCase
                 'debug' => true,
                 'connect_timeout' => 0,
                 'timeout' => 0,
+                'read_timeout' => 60,
                 'decode_content' => true,
                 'force_ip_resolve' => null,
                 'proxy' => [
@@ -128,13 +134,11 @@ class ConfigTest extends TestCase
                 'cert' => '/path/server.pem',
                 'ssl_key' => ['/path/key.pem', 'password']
             ],
-            'auto_throttle' => [
+            'autothrottle' => [
                 'enabled' => true,
                 'min_delay' => 0,
                 'max_delay' => 60
             ],
-            'concurrency' => 10,
-            'save_progress_in' => 'memory',
         ];
         $this->assertEquals($expected, $config->toArray());
     }

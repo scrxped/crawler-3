@@ -87,7 +87,7 @@ filter:
   deny:
     - thatpage.html
 
-auto_throttle:
+autothrottle:
   enabled: true
   min_delay: 0
   max_delay: 60

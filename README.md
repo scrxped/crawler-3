@@ -175,7 +175,7 @@ AutoThrottle algorithm adjusts download delays based on the following rules:
 $config = [
     'start_uri' => ['http://site.local/'],
     'concurrency' => 3,
-    'auto_throttle' => [
+    'autothrottle' => [
         'enabled' => true,
         'min_delay' => 0, // Sets minimum delay between the requests (default 0).
         'max_delay' => 60, // Sets maximun delay between the requests (default 60).
@@ -288,6 +288,102 @@ To get more details about request and response use `-vvv` option:
 ./crawler start --config=./crawler.yml -vvv 
 
 ```
+
+## Configuration
+
+```yml
+
+$fullConfig = [
+    // A list of URIs to crawl. Required parameter. 
+    'start_uri' => ['http://test.com', 'http://test1.com'],
+    
+    // The number of concurrent requests. Defaut is 10.
+    'concurrency' => 10,
+    
+    // The path to local file where the progress will be stored. Use "memory" to store the progress in memory (default behavior).
+    // The crawler uses Sqlite database to store the progress.
+    'save_progress_in' => '/path/to/my/sqlite.db',
+    
+    'filter' => [
+        // If enabled, crawler will respect robots.txt policies. Default is false
+        'robotstxt_obey' => false,
+        
+        // A list of regular expressions that the urls must match in order to be extracted. If not given (or empty), it will match all links..
+        'allow' => ['test','test1'],
+        
+        // A list of string containing domains which will be considered for extracting the links.
+        'allow_domains' => ['test.com','test1.com'],
+        
+        // A list of strings containing domains which won’t be considered for extracting the links. It has precedence over the allow_domains parameter.
+        'deny_domains' => ['test2.com','test3.com'],
+        
+        // A list of regular expressions) that the urls must match in order to be excluded (ie. not extracted). It has precedence over the allow parameter.
+        'deny' => ['test2','test3'],
+    ],
+    // Crawler uses Guzzle HTTP Client so most of the Guzzle request options supported
+    // For more info go to http://docs.guzzlephp.org/en/stable/request-options.html
+    'request_options' => [
+        // Describes the SSL certificate verification behavior of a request.
+        'verify' => false,
+        
+        // Specifies whether or not cookies are used in a request or what cookie jar to use or what cookies to send.
+        'cookies' => true,
+        
+        // Describes the redirect behavior of a request.
+        'allow_redirects' => false,
+        
+        // Set to true or to enable debug output with the handler used to send a request.
+        'debug' => true,
+        
+        // Float describing the number of seconds to wait while trying to connect to a server. Use 0 to wait indefinitely (the default behavior).
+        'connect_timeout' => 0,
+        
+        // Float describing the timeout of the request in seconds. Use 0 to wait indefinitely (the default behavior).
+        'timeout' => 0,
+        
+        // Float describing the timeout to use when reading a streamed body. Defaults to the value of the default_socket_timeout PHP ini setting
+        'read_timeout' => 60,
+        
+        // Specify whether or not Content-Encoding responses (gzip, deflate, etc.) are automatically decoded.
+        'decode_content' => true,
+        
+        // Set to "v4" if you want the HTTP handlers to use only ipv4 protocol or "v6" for ipv6 protocol.
+        'force_ip_resolve' => null,
+        
+        // Pass an array to specify different proxies for different protocols.
+        'proxy' => [
+            'http'  => 'tcp://localhost:8125', // Use this proxy with "http"
+            'https' => 'tcp://localhost:9124', // Use this proxy with "https",
+            'no' => ['.mit.edu', 'foo.com']    // Don't use a proxy with these
+         ],
+         
+         // Set to true to stream a response rather than download it all up-front.
+        'stream' => false,
+        
+        // Protocol version to use with the request.
+        'version' => '1.1',
+        
+        // Set to a string or an array to specify the path to a file containing a PEM formatted client side certificate and password.
+        'cert' => '/path/server.pem',
+        
+        // Specify the path to a file containing a private SSL key in PEM format.
+        'ssl_key' => ['/path/key.pem', 'password']
+    ],
+    
+    'autothrottle' => [
+        // Enables autothrottle extension. Default is true.
+        'enabled' => true,
+        
+        // Sets minimum delay between the requests.
+        'min_delay' => 0,
+        
+        // Sets maximun delay between the requests.
+        'max_delay' => 60
+    ]
+];
+
+```
+
 
 ## Thanks for Inspiration
 

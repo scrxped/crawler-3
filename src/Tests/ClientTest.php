@@ -210,7 +210,7 @@ class ClientTest extends TestCase
         $config = [
             'start_uri' => ['http://site2.local/async/delay3.php', 'http://site2.local/async/delay2.php'],
             'concurrency' => 1,
-            'auto_throttle' => ['enabled' => true]
+            'autothrottle' => ['enabled' => true]
         ];
 
         $client = new Client($config);

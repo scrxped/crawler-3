@@ -92,7 +92,7 @@ class Config
      */
     public function getAutoThrottleOptions(): AutoThrottleOptions
     {
-        return new AutoThrottleOptions($this->config['auto_throttle']);
+        return new AutoThrottleOptions($this->config['autothrottle']);
     }
 
     /**
