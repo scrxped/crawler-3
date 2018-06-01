@@ -291,7 +291,7 @@ To get more details about request and response use `-vvv` option:
 
 ## Configuration
 
-```yml
+```php
 
 $fullConfig = [
     // A list of URIs to crawl. Required parameter. 
