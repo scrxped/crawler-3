@@ -282,6 +282,12 @@ Then configure `crawler.yml` and run the crawler with a command:
 ./crawler start --config=./crawler.yml 
 
 ```
+To get more details about request and response use `-vvv` option:
+
+```bash
+./crawler start --config=./crawler.yml -vvv 
+
+```
 
 ## Thanks for Inspiration
 
