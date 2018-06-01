@@ -278,9 +278,11 @@ class Client
 
         $this->addExtension(new Storage(new StorageService($this->getStorageAdapter())));
 
-        $this->addExtension(new RedirectScheduler($this->getQueue()));
+        $uriPolicy = new AggregateUriPolicy($this->getConfig()->filterOptions());
 
-        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, new AggregateUriPolicy($this->getConfig()->filterOptions()), $this->getQueue()));
+        $this->addExtension(new RedirectScheduler($this->getQueue(), $uriPolicy));
+
+        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getQueue()));
     }
 
     private function initializeEventDispatcher(): void

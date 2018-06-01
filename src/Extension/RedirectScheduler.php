@@ -8,8 +8,10 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
+use Zstate\Crawler\Policy\UriPolicy;
 use Zstate\Crawler\Storage\QueueInterface;
 
 /**
@@ -21,13 +23,18 @@ class RedirectScheduler extends Extension
      * @var QueueInterface
      */
     private $queue;
+    /**
+     * @var UriPolicy
+     */
+    private $policy;
 
     /**
      * @param QueueInterface $queue
      */
-    public function __construct(QueueInterface $queue)
+    public function __construct(QueueInterface $queue, UriPolicy $policy)
     {
         $this->queue = $queue;
+        $this->policy = $policy;
     }
 
     public function responseReceived(ResponseReceived $event): void
@@ -39,9 +46,12 @@ class RedirectScheduler extends Extension
             return;
         }
 
-        $redirectRequest = $this->redirectRequest($request, $response);
+        $redirectRequest = $this->createRedirectRequest($request, $response);
 
-        $this->queue->enqueue($redirectRequest);
+        // Queue only redirects, which are allowed by filtering policy
+        if($this->policy->isUriAllowed(new AbsoluteUri($redirectRequest->getUri()))) {
+            $this->queue->enqueue($redirectRequest);
+        }
     }
 
     /**
@@ -50,13 +60,11 @@ class RedirectScheduler extends Extension
      * @param array $protocols
      * @return RequestInterface
      */
-    private function redirectRequest(RequestInterface $request, ResponseInterface $response, array $protocols = []): RequestInterface
+    private function createRedirectRequest(RequestInterface $request, ResponseInterface $response, array $protocols = []): RequestInterface
     {
         $location = UriResolver::resolve($request->getUri(), new Uri($response->getHeaderLine('Location')));
 
-        $redirectRequest = new Request('GET', $location);
-
-        return $redirectRequest;
+        return new Request('GET', $location);
     }
 
     /**
