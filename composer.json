@@ -1,7 +1,17 @@
 {
-    "name":         "zstate/crawler",
-    "description":  "Crawler is a fast asynchronous internet bot aiming to provide open source web search and testing solution for local websites. It can be used for a wide range of purposes, from extracting and indexing structured data to monitoring and automated testing.",
-
+    "name": "zstate/crawler",
+    "description":  "Crawler is a fast asynchronous internet crawling framework aiming to provide open source web search and testing solution for local websites. It can be used for a wide range of purposes, from extracting and indexing structured data to monitoring and automated testing.",
+    "type": "library",
+    "keywords": ["framework", "crawler", "crawling", "web-scraping ", "automated-testing ", "web-search "],
+    "homepage": "https://github.com/zstate/crawler",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Egor Zubkevich",
+            "email": "zstate@gmail.com",
+            "homepage": "https://github.com/zstate"
+        }
+    ],
     "require": {
         "php": ">=7.1",
         "guzzlehttp/guzzle": "^6.0",
