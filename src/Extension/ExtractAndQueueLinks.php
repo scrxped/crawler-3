@@ -66,6 +66,7 @@ class ExtractAndQueueLinks extends Extension
             $request = new Request('GET', $visitUri);
 
             // Add referer header for logging purposes
+            /** @var Request $request */
             $request = $request->withHeader('Referer', (string) $currentUri);
 
             $this->queue->enqueue($request);
