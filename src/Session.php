@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Zstate\Crawler;
 
-use GuzzleHttp\ClientInterface;
+use Zstate\Crawler\Http\HttpClient;
+
 
 /**
  * @package Zstate\Crawler
@@ -12,22 +13,22 @@ use GuzzleHttp\ClientInterface;
 class Session
 {
     /**
-     * @var ClientInterface
+     * @var HttpClient
      */
     private $httpClient;
 
     /**
-     * @param ClientInterface $httpClient
+     * @param HttpClient $httpClient
      */
-    public function __construct(ClientInterface $httpClient)
+    public function __construct(HttpClient $httpClient)
     {
         $this->httpClient = $httpClient;
     }
 
     /**
-     * @return ClientInterface
+     * @return HttpClient
      */
-    public function getHttpClient(): ClientInterface
+    public function getHttpClient(): HttpClient
     {
         return $this->httpClient;
     }

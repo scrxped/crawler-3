@@ -3,10 +3,7 @@
 namespace Zstate\Crawler;
 
 use Exception;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Zstate\Crawler\Event\AfterEngineStopped;
@@ -15,6 +12,7 @@ use Zstate\Crawler\Event\BeforeRequestSent;
 use Zstate\Crawler\Event\RequestFailed;
 use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Exception\InvalidRequestException;
+use Zstate\Crawler\Http\HttpClient;
 use Zstate\Crawler\Middleware\MiddlewareStack;
 use Zstate\Crawler\Service\RequestFingerprint;
 use Zstate\Crawler\Storage\HistoryInterface;
@@ -37,7 +35,7 @@ class Scheduler
     private $concurrency;
 
     /**
-     * @var ClientInterface
+     * @var HttpClient
      */
     private $client;
 
@@ -67,14 +65,14 @@ class Scheduler
      *   allowed number of outstanding concurrently executing promises,
      *   creating a capped pool of promises. There is no limit by default.
      *
-     * @param ClientInterface $client
+     * @param HttpClient $client
      * @param EventDispatcherInterface $eventDispatcher
      * @param HistoryInterface $history
      * @param QueueInterface $queue
      * @param int $concurrency
      */
     public function __construct(
-        ClientInterface $client,
+        HttpClient $client,
         EventDispatcherInterface $eventDispatcher,
         HistoryInterface $history,
         QueueInterface $queue,
@@ -158,11 +156,12 @@ class Scheduler
             return false;
         }
 
-        $this->eventDispatcher->dispatch(BeforeRequestSent::class, new BeforeRequestSent($request));
-
-        $idx = RequestFingerprint::calculate($request);
-
         try {
+
+            $this->eventDispatcher->dispatch(BeforeRequestSent::class, new BeforeRequestSent($request));
+
+            $idx = RequestFingerprint::calculate($request);
+
             // Run request through the request middleware stack
             $request = $this->middlewareStack->getRequestMiddlewareStack()($request);
 

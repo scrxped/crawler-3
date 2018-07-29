@@ -1,7 +1,6 @@
 <?php
 namespace Zstate\Crawler;
 
-use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\Psr7\Request;
@@ -20,6 +19,8 @@ use Zstate\Crawler\Extension\Storage;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
 use Zstate\Crawler\Handler\HandlerStack;
+use Zstate\Crawler\Http\GuzzleHttpClient;
+use Zstate\Crawler\Http\HttpClient;
 use Zstate\Crawler\Middleware\MiddlewareStack;
 use Zstate\Crawler\Middleware\RequestMiddleware;
 use Zstate\Crawler\Middleware\ResponseMiddleware;
@@ -49,7 +50,7 @@ class Client
     private $config;
 
     /**
-     * @var ClientInterface
+     * @var HttpClient
      */
     private $httpClient;
 
@@ -216,13 +217,14 @@ class Client
             $this->getDispatcher()->dispatch(ResponseHeadersReceived::class, new ResponseHeadersReceived($response));
         };
 
-        $this->httpClient = new GuzzleHttpClient($config);
+        $httpClient = new \GuzzleHttp\Client($config);
+        $this->httpClient = new GuzzleHttpClient(new \GuzzleHttp\Client($config));
     }
 
     /**
-     * @return ClientInterface
+     * @return HttpClient
      */
-    private function getHttpClient(): ClientInterface
+    private function getHttpClient(): HttpClient
     {
         return $this->httpClient;
     }
@@ -282,7 +284,7 @@ class Client
 
         $this->addExtension(new RedirectScheduler($this->getQueue(), $uriPolicy));
 
-        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getQueue()));
+        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getQueue(), $this->getConfig()->depth()));
     }
 
     private function initializeEventDispatcher(): void
