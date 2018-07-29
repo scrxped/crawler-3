@@ -57,7 +57,7 @@ $client->addExtension(new class($loginUri, $username, $password) extends Extensi
             $body
         );
 
-        $this->getSession()->getHttpClient()->send($request);
+        $this->getSession()->getHttpClient()->sendAsync($request)->wait();
     }
 
     /**
