@@ -357,4 +357,29 @@ class ClientTest extends TestCase
         ];
         $this->assertEquals($expected, $log->getLog());
     }
+
+    public function testRequestDepth()
+    {
+        $config = [
+            'start_uri' => ['http://site1.local/'],
+            'concurrency' => 1,
+            'depth' => 2
+        ];
+        $log = new LogMiddleware;
+
+        $client = new Client($config);
+        $client->addResponseMiddleware($log);
+
+        $client->run();
+
+        $expected = [
+            0 => 'Process Response: http://site1.local/ status:200',
+            1 => 'Process Response: http://site1.local/customers.html status:200',
+            2 => 'Process Response: http://site2.local status:200',
+            3 => 'Process Response: http://site2.local/service.html status:200',
+        ];
+
+        $this->assertEquals($expected, $log->getLog());
+
+    }
 }
