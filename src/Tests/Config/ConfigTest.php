@@ -68,6 +68,7 @@ class ConfigTest extends TestCase
         $config = Config::fromArray([
             'start_uri' => ['http://test.com'],
             'concurrency' => 10,
+            'depth' => 3,
             'save_progress_in' => '/path/to/my/sqlite.db',
             'filter' => [
                 'robotstxt_obey' => false,
@@ -106,6 +107,7 @@ class ConfigTest extends TestCase
         $expected = [
             'start_uri' => ['http://test.com'],
             'concurrency' => 10,
+            'depth' => 3,
             'save_progress_in' => '/path/to/my/sqlite.db',
             'filter' => [
                 'robotstxt_obey' => false,

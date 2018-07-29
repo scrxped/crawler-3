@@ -13,8 +13,9 @@ It can be used for a wide range of purposes, from extracting and indexing struct
 - If configured, automatically filters out requests forbidden by the `robots.txt` exclusion standard.
 - Straightforward middleware system allows you to append headers, extract data, filter or plug any custom functionality to process the request and response.
 - Rich filtering capabilities.
+- Ability to set crawling depth
 - Easy to extend the core by hooking into the crawling process using events.
-
+- Shut down crawler any time and start over without losing the progress.
 
 ## Quick Start
 ```php
@@ -299,6 +300,9 @@ $fullConfig = [
     
     // The number of concurrent requests. Defaut is 10.
     'concurrency' => 10,
+    
+    // The maximum depth that will be allowed to crawl (Mininum 1, unlimited if not set). 
+    'depth' => 1,
     
     // The path to local file where the progress will be stored. Use "memory" to store the progress in memory (default behavior).
     // The crawler uses Sqlite database to store the progress.
