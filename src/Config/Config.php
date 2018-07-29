@@ -80,6 +80,14 @@ class Config
     }
 
     /**
+     * @return int
+     */
+    public function depth(): ? int
+    {
+        return $this->config['depth'];
+    }
+
+    /**
      * @return string
      */
     public function saveProgressIn(): string
