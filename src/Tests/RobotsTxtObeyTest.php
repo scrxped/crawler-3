@@ -6,19 +6,19 @@
  * Time: 4:49 PM
  */
 
-namespace Zstate\Crawler\Tests\Middleware;
+namespace Zstate\Crawler\Tests;
 
-use RobotsTxtMiddleware;
 use PHPUnit\Framework\TestCase;
 use Zstate\Crawler\Client;
+use Zstate\Crawler\Tests\Middleware\HistoryMiddleware;
 
-class RobotsTxtMiddlewareTest extends TestCase
+class RobotsTxtObeyTest extends TestCase
 {
     public function testRobotsTxt()
     {
         $config = [
             'start_uri' => ['http://site1.local/robotstxt.html'],
-            'concurrency' => 2,
+            'concurrency' => 1,
             'request_options' => [
                 'debug' => false,
             ],

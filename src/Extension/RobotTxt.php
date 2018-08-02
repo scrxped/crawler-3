@@ -2,22 +2,17 @@
 declare(strict_types=1);
 
 
-namespace Zstate\Crawler\Middleware;
+namespace Zstate\Crawler\Extension;
+
 
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
-use Psr\Http\Message\RequestInterface;
-use webignition\RobotsTxt\File\Parser;
-use webignition\RobotsTxt\Inspector\Inspector;
+use Zstate\Crawler\Event\BeforeRequestSent;
 use Zstate\Crawler\Exception\InvalidRequestException;
+use Zstate\Crawler\Policy\RobotsTxtPolicy;
 
-/**
- * @package Zstate\Crawler\Middleware
- */
-class RobotsTxtMiddleware implements RequestMiddleware
+class RobotTxt extends Extension
 {
-    private const USER_AGENT = 'zstate/crawler';
-
     /**
      * @var ClientInterface
      */
@@ -28,16 +23,32 @@ class RobotsTxtMiddleware implements RequestMiddleware
      */
     private $cache = [];
 
-    public function __construct()
+    /**
+     * @var bool
+     */
+    private $obeyRobotTxt;
+
+    /**
+     * RobotTxt constructor.
+     * @param bool $obeyRobotTxt
+     */
+    public function __construct(bool $obeyRobotTxt)
     {
         $this->client = new Client;
+        $this->obeyRobotTxt = $obeyRobotTxt;
     }
 
     /**
-     * @inheritdoc
+     * @param BeforeRequestSent $event
      */
-    public function processRequest(RequestInterface $request): RequestInterface
+    public function beforeRequestSent(BeforeRequestSent $event): void
     {
+        //If the obeyRobotTxt option is not enabled, then skip the logic
+        if(! $this->obeyRobotTxt) {
+            return;
+        }
+
+        $request = $event->getRequest();
         $robotTxtUri = (string) $request->getUri()->withPath('/robots.txt');
 
         // Checking cache first
@@ -57,34 +68,25 @@ class RobotsTxtMiddleware implements RequestMiddleware
             $robotTxtContent = $this->cache[$robotTxtUri];
         }
 
-        // If the content is still empty, then robots.txt doesn't exist or is empty (no rules). Go to the next middleware
+        // If the content is still empty, then robots.txt doesn't exist or is empty (no rules).
         if (empty($robotTxtContent)) {
-            return $request;
+            return;
         }
 
-        $inspector = $this->getInspector($robotTxtContent);
-
-        // Go to the next middleware if it is allowed
-        if ($inspector->isAllowed($request->getUri()->getPath())) {
-            return $request;
+        // Do not do anything if it is allowed
+        $policy = new RobotsTxtPolicy($robotTxtContent);
+        if ($policy->isRequestAllowed($request)) {
+            return;
         }
 
         // Stopping this request
         throw new InvalidRequestException('The path "' . $request->getUri()->getPath() . '" is not allowed by robots.txt.');
     }
 
-    /**
-     * @param string $robotTxtContent
-     * @return Inspector
-     */
-    private function getInspector(string $robotTxtContent): Inspector
+    public static function getSubscribedEvents(): array
     {
-        $parser = new Parser;
-        $parser->setSource($robotTxtContent);
-
-        $inspector = new Inspector($parser->getFile());
-        $inspector->setUserAgent(self::USER_AGENT);
-
-        return $inspector;
+        return [
+            BeforeRequestSent::class => 'beforeRequestSent',
+        ];
     }
 }
