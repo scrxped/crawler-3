@@ -8,14 +8,12 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\AbsoluteUri;
-use Zstate\Crawler\Event\BeforeRequestSent;
 use Zstate\Crawler\Event\ResponseReceived;
-use Zstate\Crawler\Exception\InvalidRequestException;
-use function Zstate\Crawler\get_request_depth;
 use Zstate\Crawler\Policy\UriPolicy;
-use const Zstate\Crawler\REQUEST_DEPTH_HEADER;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Storage\QueueInterface;
+use const Zstate\Crawler\REQUEST_DEPTH_HEADER;
+use function Zstate\Crawler\get_request_depth;
 
 /**
  * @package Zstate\Crawler\Extension
@@ -44,13 +42,11 @@ class ExtractAndQueueLinks extends Extension
     /**
      * @param LinkExtractorInterface $linkExtractor
      * @param UriPolicy $policy
-     * @param QueueInterface $queue
      * @param int|null $depth
      */
-    public function __construct(LinkExtractorInterface $linkExtractor, UriPolicy $policy, QueueInterface $queue, ? int $depth)
+    public function __construct(LinkExtractorInterface $linkExtractor, UriPolicy $policy, ? int $depth)
     {
         $this->linkExtractor = $linkExtractor;
-        $this->queue = $queue;
         $this->policy = $policy;
         $this->depth = $depth;
     }
@@ -82,7 +78,7 @@ class ExtractAndQueueLinks extends Extension
 
             $nextRequest = $this->trackRequestDepth($currentRequest, $nextRequest);
 
-            $this->queue->enqueue($nextRequest);
+            $this->getQueue()->enqueue($nextRequest);
         }
     }
 

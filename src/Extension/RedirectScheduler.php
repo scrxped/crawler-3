@@ -12,7 +12,6 @@ use Zstate\Crawler\AbsoluteUri;
 use Zstate\Crawler\Event\ResponseReceived;
 use function Zstate\Crawler\is_redirect;
 use Zstate\Crawler\Policy\UriPolicy;
-use Zstate\Crawler\Storage\QueueInterface;
 
 /**
  * @package Zstate\Crawler\Extension
@@ -20,20 +19,16 @@ use Zstate\Crawler\Storage\QueueInterface;
 class RedirectScheduler extends Extension
 {
     /**
-     * @var QueueInterface
-     */
-    private $queue;
-    /**
      * @var UriPolicy
      */
     private $policy;
 
     /**
-     * @param QueueInterface $queue
+     * RedirectScheduler constructor.
+     * @param UriPolicy $policy
      */
-    public function __construct(QueueInterface $queue, UriPolicy $policy)
+    public function __construct(UriPolicy $policy)
     {
-        $this->queue = $queue;
         $this->policy = $policy;
     }
 
@@ -50,7 +45,7 @@ class RedirectScheduler extends Extension
 
         // Queue only redirects, which are allowed by filtering policy
         if($this->policy->isUriAllowed(new AbsoluteUri($redirectRequest->getUri()))) {
-            $this->queue->enqueue($redirectRequest);
+            $this->getQueue()->enqueue($redirectRequest);
         }
     }
 

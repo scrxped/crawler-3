@@ -269,7 +269,7 @@ class Client
      */
     public function addExtension(Extension $extension): void
     {
-        $extension->initialize($this->getConfig(), $this->getSession());
+        $extension->initialize($this->getConfig(), $this->getSession(), $this->getQueue());
 
         $this->getDispatcher()->addSubscriber($extension);
 
@@ -284,9 +284,9 @@ class Client
 
         $uriPolicy = new AggregateUriPolicy($this->getConfig()->filterOptions());
 
-        $this->addExtension(new RedirectScheduler($this->getQueue(), $uriPolicy));
+        $this->addExtension(new RedirectScheduler($uriPolicy));
 
-        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getQueue(), $this->getConfig()->depth()));
+        $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getConfig()->depth()));
 
         $this->addExtension(new RequestDepth($this->getConfig()->depth()));
 
