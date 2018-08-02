@@ -15,6 +15,8 @@ use Zstate\Crawler\Extension\AutoThrottle;
 use Zstate\Crawler\Extension\Extension;
 use Zstate\Crawler\Extension\ExtractAndQueueLinks;
 use Zstate\Crawler\Extension\RedirectScheduler;
+use Zstate\Crawler\Extension\RequestDepth;
+use Zstate\Crawler\Extension\RobotTxt;
 use Zstate\Crawler\Extension\Storage;
 use Zstate\Crawler\Handler\CurlMultiHandler;
 use Zstate\Crawler\Handler\Handler;
@@ -285,6 +287,10 @@ class Client
         $this->addExtension(new RedirectScheduler($this->getQueue(), $uriPolicy));
 
         $this->addExtension(new ExtractAndQueueLinks(new LinkExtractor, $uriPolicy, $this->getQueue(), $this->getConfig()->depth()));
+
+        $this->addExtension(new RequestDepth($this->getConfig()->depth()));
+
+        $this->addExtension(new RobotTxt($this->getConfig()->filterOptions()->obeyRobotsTxt()));
     }
 
     private function initializeEventDispatcher(): void
@@ -323,12 +329,6 @@ class Client
     private function initializeMiddlewareStack(): void
     {
         $this->middlewareStack = new MiddlewareStack;
-
-        // Adding robots.txt middleware if enabled.
-        $filterOptions = $this->getConfig()->filterOptions();
-        if ($filterOptions->obeyRobotsTxt()) {
-            $this->addRequestMiddleware(new RobotsTxtMiddleware);
-        }
     }
 
     /**

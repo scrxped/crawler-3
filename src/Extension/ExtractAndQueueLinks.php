@@ -8,9 +8,12 @@ use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Psr\Http\Message\RequestInterface;
 use Zstate\Crawler\AbsoluteUri;
+use Zstate\Crawler\Event\BeforeRequestSent;
 use Zstate\Crawler\Event\ResponseReceived;
 use Zstate\Crawler\Exception\InvalidRequestException;
+use function Zstate\Crawler\get_request_depth;
 use Zstate\Crawler\Policy\UriPolicy;
+use const Zstate\Crawler\REQUEST_DEPTH_HEADER;
 use Zstate\Crawler\Service\LinkExtractorInterface;
 use Zstate\Crawler\Storage\QueueInterface;
 
@@ -19,8 +22,6 @@ use Zstate\Crawler\Storage\QueueInterface;
  */
 class ExtractAndQueueLinks extends Extension
 {
-    private const REQUEST_DEPTH_HEADER = 'X-Crawler-Request-Depth';
-
     /**
      * @var LinkExtractorInterface
      */
@@ -79,7 +80,7 @@ class ExtractAndQueueLinks extends Extension
             /** @var Request $nextRequest */
             $nextRequest = $nextRequest->withHeader('Referer', (string) $currentUri);
 
-            $nextRequest = $this->validateAndTrackRequestDepth($currentRequest, $nextRequest);
+            $nextRequest = $this->trackRequestDepth($currentRequest, $nextRequest);
 
             $this->queue->enqueue($nextRequest);
         }
@@ -90,14 +91,10 @@ class ExtractAndQueueLinks extends Extension
      * @param $nextRequest
      * @return RequestInterface
      */
-    private function validateAndTrackRequestDepth(RequestInterface $request, RequestInterface $nextRequest): RequestInterface
+    private function trackRequestDepth(RequestInterface $request, RequestInterface $nextRequest): RequestInterface
     {
         if ($this->depth) {
-            $currentRequestDepth = $this->getRequestDepth($request);
-            if ($currentRequestDepth === $this->depth) {
-                throw new InvalidRequestException('The crawl depth is reached');
-            }
-
+            $currentRequestDepth = get_request_depth($request);
             $nextRequest = $this->addRequestDepthHeader($currentRequestDepth, $nextRequest);
         }
 
@@ -108,14 +105,9 @@ class ExtractAndQueueLinks extends Extension
     {
         $nextRequestDepth = $currentRequestDepth + 1;
 
-        $request = $request->withHeader(self::REQUEST_DEPTH_HEADER, $nextRequestDepth);
+        $request = $request->withHeader(REQUEST_DEPTH_HEADER, $nextRequestDepth);
 
         return $request;
-    }
-
-    private function getRequestDepth(RequestInterface $request): int
-    {
-        return (int) $request->getHeaderLine(self::REQUEST_DEPTH_HEADER);
     }
 
     /**

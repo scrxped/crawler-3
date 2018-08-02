@@ -373,10 +373,9 @@ class ClientTest extends TestCase
         $client->run();
 
         $expected = [
-            0 => 'Process Response: http://site1.local/ status:200',
-            1 => 'Process Response: http://site1.local/customers.html status:200',
-            2 => 'Process Response: http://site2.local status:200',
-            3 => 'Process Response: http://site2.local/service.html status:200',
+            'Process Response: http://site1.local/ status:200',
+            'Process Response: http://site1.local/customers.html status:200',
+            'Process Response: http://site2.local status:200',
         ];
 
         $this->assertEquals($expected, $log->getLog());
