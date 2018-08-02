@@ -2,8 +2,11 @@
 
 namespace Zstate\Crawler;
 
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UriInterface;
+
+const REQUEST_DEPTH_HEADER = 'X-Crawler-Request-Depth';
 
 /**
  * @param ResponseInterface $response
@@ -34,4 +37,9 @@ function is_uri_matched_pattern(UriInterface $uri, string $pattern): bool
     }
 
     return (bool) $match;
+}
+
+function get_request_depth(RequestInterface $request): int
+{
+    return (int) $request->getHeaderLine(REQUEST_DEPTH_HEADER);
 }
