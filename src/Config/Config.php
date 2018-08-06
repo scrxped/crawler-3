@@ -84,7 +84,7 @@ class Config
      */
     public function depth(): ? int
     {
-        return $this->config['depth'];
+        return $this->config['depth'] ?? null;
     }
 
     /**
