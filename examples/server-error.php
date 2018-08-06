@@ -2,7 +2,6 @@
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Zstate\Crawler\Middleware\BaseMiddleware;
 use Zstate\Crawler\Client;
 use Zstate\Crawler\Middleware\ResponseMiddleware;
 
