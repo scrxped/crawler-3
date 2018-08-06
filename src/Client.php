@@ -1,7 +1,6 @@
 <?php
 namespace Zstate\Crawler;
 
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Handler\CurlMultiHandler as GuzzleCurlMultiHandler;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\TransferStats;
@@ -26,7 +25,6 @@ use Zstate\Crawler\Http\HttpClient;
 use Zstate\Crawler\Middleware\MiddlewareStack;
 use Zstate\Crawler\Middleware\RequestMiddleware;
 use Zstate\Crawler\Middleware\ResponseMiddleware;
-use Zstate\Crawler\Middleware\RobotsTxtMiddleware;
 use Zstate\Crawler\Policy\AggregateUriPolicy;
 use Zstate\Crawler\Service\LinkExtractor;
 use Zstate\Crawler\Service\StorageService;

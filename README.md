@@ -238,7 +238,7 @@ $client->addExtension(new class($loginUri, $username, $password) extends Extensi
         $formParams = ['username' => $username, 'password' => $password];
         $body = http_build_query($formParams, '', '&');
         $request = new Request('POST', $loginUri, ['content-type' => 'application/x-www-form-urlencoded'], $body);
-        $this->getSession()->getHttpClient()->send($request);
+        $this->getSession()->getHttpClient()->sendAsync($request)->wait();
     }
 
     public static function getSubscribedEvents(): array
