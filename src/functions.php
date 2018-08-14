@@ -39,6 +39,10 @@ function is_uri_matched_pattern(UriInterface $uri, string $pattern): bool
     return (bool) $match;
 }
 
+/**
+ * @param RequestInterface $request
+ * @return int
+ */
 function get_request_depth(RequestInterface $request): int
 {
     return (int) $request->getHeaderLine(REQUEST_DEPTH_HEADER);

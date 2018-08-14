@@ -8,8 +8,9 @@ namespace Zstate\Crawler\Policy;
 use Psr\Http\Message\RequestInterface;
 use webignition\RobotsTxt\File\Parser;
 use webignition\RobotsTxt\Inspector\Inspector;
+use Zstate\Crawler\AbsoluteUri;
 
-class RobotsTxtPolicy
+class RobotsTxtPolicy implements UriPolicy
 {
     private const USER_AGENT = 'zstate/crawler';
 
@@ -33,7 +34,7 @@ class RobotsTxtPolicy
      */
     public function isRequestAllowed(RequestInterface $request): bool
     {
-        return $this->getInspector()->isAllowed($request->getUri()->getPath());
+        return $this->isUriAllowed(new AbsoluteUri($request->getUri()));
     }
 
     /**
@@ -48,5 +49,14 @@ class RobotsTxtPolicy
         $inspector->setUserAgent(self::USER_AGENT);
 
         return $inspector;
+    }
+
+    /**
+     * @param AbsoluteUri $uri
+     * @return bool
+     */
+    public function isUriAllowed(AbsoluteUri $uri): bool
+    {
+        return $this->getInspector()->isAllowed($uri->getValue()->getPath());
     }
 }
