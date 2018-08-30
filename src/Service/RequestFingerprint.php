@@ -28,7 +28,7 @@ class RequestFingerprint
      * component to the HTTP Request and thus should be ignored when calculating
      * the fingerprint.
      * For this reason, request headers are ignored by default when calculating
-     * the fingeprint. If you want to include specific headers use the
+     * the fingerprint. If you want to include specific headers use the
      * include_headers argument, which is a list of Request headers to include.
      *
      *
