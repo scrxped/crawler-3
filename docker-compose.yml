@@ -3,7 +3,6 @@ version: '2'
 services:
   site1.local:
     image: webdevops/php-apache-dev:7.1
-    container_name: site1-local
     ports:
       - "8880:80"
     volumes:
@@ -13,7 +12,6 @@ services:
 
   site2.local:
     image: webdevops/php-apache-dev:7.1
-    container_name: site2-local
     ports:
       - "8881:80"
     volumes:
