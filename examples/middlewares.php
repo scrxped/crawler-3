@@ -18,6 +18,7 @@ $client->addRequestMiddleware(
     new class implements RequestMiddleware {
         public function processRequest(RequestInterface $request): RequestInterface
         {
+            $request = $request->withHeader("User-Agent", "Mybot/1.1");
             printf("Middleware 1 Request: %s \n", $request->getUri());
             return $request;
         }
