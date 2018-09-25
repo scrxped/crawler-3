@@ -217,7 +217,6 @@ class Client
             $this->getDispatcher()->dispatch(ResponseHeadersReceived::class, new ResponseHeadersReceived($response));
         };
 
-        $httpClient = new \GuzzleHttp\Client($config);
         $this->httpClient = new GuzzleHttpClient(new \GuzzleHttp\Client($config));
     }
 
