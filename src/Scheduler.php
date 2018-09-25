@@ -3,6 +3,7 @@
 namespace Zstate\Crawler;
 
 use Exception;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -173,9 +174,15 @@ class Scheduler
                 function (ResponseInterface $response) use ($idx, $request): ResponseInterface {
 
                     // Run response through the response middleware stack
+                    /** @var ResponseInterface $response */
                     $response = $this->middlewareStack->getResponseMiddlewareStack()($response, $request);
 
                     $this->eventDispatcher->dispatch(ResponseReceived::class, new ResponseReceived($response, $request));
+
+                    // Response with 4xx and 5xx statuses
+                    if ($response->getStatusCode() >= 400) {
+                        throw RequestException::create($request, $response);
+                    }
 
                     $this->step($idx);
 
