@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/zstate/crawler.svg?branch=master)](https://travis-ci.org/zstate/crawler)
 [![Coverage Status](https://coveralls.io/repos/github/zstate/crawler/badge.svg)](https://coveralls.io/github/zstate/crawler)
 
+The repository migrated to https://github.com/crawlzone/crawlzone
+
 # Overview
 
 Crawler is a fast asynchronous internet crawling framework aiming to provide open source web search and testing solution.
